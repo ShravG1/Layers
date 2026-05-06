@@ -17,6 +17,8 @@ import { LocationSearch }      from './components/LocationSearch.jsx'
 import { Toast }               from './components/Toast.jsx'
 import { HistoryPage, saveHistoryEntry, loadHistory } from './components/HistoryPage.jsx'
 import { SettingsPage, loadSettings } from './components/SettingsPage.jsx'
+import { DailyMoodPrompt } from './components/DailyMoodPrompt.jsx'
+import { InstallHint } from './components/InstallHint.jsx'
 
 const TABS = ['home', 'history', 'settings']
 const TAB_ICONS  = { home: '🏠', history: '📋', settings: '⚙️' }
@@ -32,7 +34,8 @@ export default function App() {
   } = useWeather()
 
   const {
-    prefs, setThermalProfile, recordFeedback,
+    prefs, completeOnboarding, recordFeedback, logDailyMood, acknowledgeColdDrop,
+    setWardrobe, addCustomExtra, removeCustomExtra,
     clearPendingToast, resetPreferences, resetOnboarding,
   } = usePreferences()
 
@@ -75,13 +78,17 @@ export default function App() {
     })
   }, [outfitData?.bucket]) // eslint-disable-line
 
-  // Show notification prompt after onboarding
+  // Show notification prompt after onboarding OR on first standalone (PWA) launch
   useEffect(() => {
-    if (prefs.onboardingDone && !notifSettings.prompted) {
-      const t = setTimeout(() => setNotifPromptShown(true), 1500)
-      return () => clearTimeout(t)
-    }
-  }, [prefs.onboardingDone, notifSettings.prompted])
+    if (!prefs.onboardingDone) return
+    if (permission !== 'default') return
+    const standalone =
+      window.matchMedia?.('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true
+    if (!standalone && notifSettings.prompted) return
+    const t = setTimeout(() => setNotifPromptShown(true), 1500)
+    return () => clearTimeout(t)
+  }, [prefs.onboardingDone, notifSettings.prompted, permission])
 
   const handleFeedback = useCallback((val) => {
     if (!outfitData) return
@@ -102,14 +109,14 @@ export default function App() {
   }, [])
 
   if (!prefs.onboardingDone) {
-    return <OnboardingScreen onSelect={setThermalProfile} />
+    return <OnboardingScreen onComplete={completeOnboarding} />
   }
 
   return (
-    <div className="flex flex-col h-full max-w-[420px] mx-auto relative bg-[#0f0f0f]">
+    <div className="flex flex-col h-full max-w-[420px] mx-auto relative bg-[#0a0a0a]">
       {/* Header */}
-      <header className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-zinc-900 flex-shrink-0">
-        <h1 className="text-white font-bold text-xl tracking-tight">WhatToWear</h1>
+      <header className="px-4 pt-3 pb-3 flex items-center justify-between border-b border-zinc-900/60 flex-shrink-0">
+        <h1 className="text-white font-bold text-[22px] tracking-tight">Layers</h1>
         <button
           onClick={refresh}
           className="text-zinc-500 hover:text-white transition-colors text-xl"
@@ -145,11 +152,21 @@ export default function App() {
             {weather && (
               <>
                 <WeatherDisplay weather={weather} location={location} />
-                <OutfitCard outfitData={outfitData} onLogWorn={handleLogWorn} />
+                <OutfitCard outfitData={outfitData} onLogWorn={handleLogWorn} ownedIds={prefs.wardrobe} />
                 <PackSomethingBanner alert={eveningAlert} />
                 <MorningPeakBanner peak={morningPeak} />
                 <UVAlert weather={weather} hourly={hourly} settings={settings} />
                 <FeedbackRow onFeedback={handleFeedback} />
+                <DailyMoodPrompt
+                  hour={outfitData?.hour ?? new Date().getHours()}
+                  dailyMoodLog={prefs.dailyMoodLog}
+                  morningPeak={morningPeak}
+                  currentFeelsLike={weather.apparent_temperature}
+                  acknowledgedDrop={prefs.acknowledgedDrop}
+                  onLog={logDailyMood}
+                  onAcknowledgeDrop={acknowledgeColdDrop}
+                />
+                <InstallHint />
               </>
             )}
 
@@ -169,7 +186,13 @@ export default function App() {
                   </button>
                   <button
                     onClick={async () => {
-                      await requestPermission()
+                      const hour = parseInt((settings.notifTime || '07:30').split(':')[0]) || 7
+                      await requestPermission({
+                        lat: location?.latitude,
+                        lon: location?.longitude,
+                        city: location?.name,
+                        localHour: hour,
+                      })
                       setNotifPromptShown(false)
                     }}
                     className="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-xs font-medium"
@@ -190,6 +213,8 @@ export default function App() {
           <SettingsPage
             onResetPrefs={resetPreferences}
             onResetOnboarding={resetOnboarding}
+            wardrobe={prefs.wardrobe ?? []}
+            onWardrobeChange={setWardrobe}
           />
         )}
       </main>

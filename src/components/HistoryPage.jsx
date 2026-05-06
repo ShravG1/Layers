@@ -1,4 +1,11 @@
 import { ITEM_EMOJI, BUCKET_LABELS } from '../utils/outfitLogic.js'
+import { ITEM_BY_ID } from '../utils/wardrobe.js'
+
+function renderWorn(id) {
+  const item = ITEM_BY_ID[id]
+  if (item) return { emoji: item.emoji, label: item.label }
+  return { emoji: '👕', label: id }
+}
 
 const LS_KEY = 'wtw_history'
 
@@ -71,11 +78,14 @@ export function HistoryPage() {
                   <div className="mt-2 pt-2 border-t border-zinc-800">
                     <p className="text-zinc-500 text-xs mb-1">Actually wore:</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {e.wornItems.map((item, i) => (
-                        <span key={i} className="bg-indigo-900/40 text-indigo-300 text-xs rounded-lg px-2 py-1">
-                          {ITEM_EMOJI[item] ?? '👕'} {item}
-                        </span>
-                      ))}
+                      {e.wornItems.map((item, i) => {
+                        const r = renderWorn(item)
+                        return (
+                          <span key={i} className="bg-indigo-900/40 text-indigo-300 text-xs rounded-lg px-2 py-1">
+                            {r.emoji} {r.label}
+                          </span>
+                        )
+                      })}
                     </div>
                   </div>
                 )}

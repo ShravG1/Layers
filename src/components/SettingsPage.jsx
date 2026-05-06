@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePushNotifications } from '../hooks/usePushNotifications.js'
+import { WardrobeSelect } from './WardrobeSelect.jsx'
 
 const LS_SETTINGS_KEY = 'wtw_settings'
 
@@ -13,7 +14,8 @@ export function saveSettings(settings) {
   localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(settings))
 }
 
-export function SettingsPage({ onResetPrefs, onResetOnboarding }) {
+export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange }) {
+  const [wardrobeOpen, setWardrobeOpen] = useState(false)
   const [settings, setSettings] = useState(() => ({
     eveningCheckHour: 19,
     eveningTempDrop: 4,
@@ -34,6 +36,22 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding }) {
   return (
     <div className="overflow-y-auto h-full pb-24 px-4 pt-4">
       <h2 className="text-white font-semibold text-lg mb-5">Settings</h2>
+
+      {/* Wardrobe */}
+      <Section title="Wardrobe">
+        <button
+          onClick={() => setWardrobeOpen(o => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+        >
+          <span className="text-zinc-300 text-sm">Edit my wardrobe</span>
+          <span className="text-zinc-500 text-xs">{wardrobe.length} items · {wardrobeOpen ? '▲' : '▼'}</span>
+        </button>
+        {wardrobeOpen && (
+          <div className="px-4 pb-4">
+            <WardrobeSelect selected={wardrobe} onChange={onWardrobeChange} dense />
+          </div>
+        )}
+      </Section>
 
       {/* Evening alerts */}
       <Section title="Evening Alerts">
