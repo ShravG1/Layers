@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  * { box-sizing: border-box; }
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #0f0f0f;
+    color: #f1f1f1;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@keyframes pulse-sun {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.85; }
+}
+@keyframes drift-cloud {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+@keyframes fall-rain {
+  0% { transform: translateY(-8px); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translateY(18px); opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-in-out {
+  0% { opacity: 0; transform: translateY(20px); }
+  15% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(20px); }
+}
+
+.animate-pulse-sun { animation: pulse-sun 2.5s ease-in-out infinite; }
+.animate-drift-cloud { animation: drift-cloud 4s ease-in-out infinite; }
+.animate-fall-rain { animation: fall-rain 1.2s ease-in infinite; }
+.animate-fade-in { animation: fade-in 0.4s ease-out; }
+.animate-toast { animation: toast-in-out 3.5s ease forwards; }
+
+.rain-drop { display: inline-block; width: 2px; border-radius: 2px; background: #60a5fa; }
+.rain-drop:nth-child(2) { animation-delay: 0.2s; }
+.rain-drop:nth-child(3) { animation-delay: 0.4s; }
+.rain-drop:nth-child(4) { animation-delay: 0.15s; }
+.rain-drop:nth-child(5) { animation-delay: 0.35s; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #1a1a1a; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
