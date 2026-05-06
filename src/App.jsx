@@ -8,7 +8,6 @@ import { usePushNotifications } from './hooks/usePushNotifications.js'
 
 import { WeatherDisplay }      from './components/WeatherDisplay.jsx'
 import { OutfitCard }          from './components/OutfitCard.jsx'
-import { FeedbackRow }         from './components/FeedbackRow.jsx'
 import { PackSomethingBanner } from './components/PackSomethingBanner.jsx'
 import { MorningPeakBanner }   from './components/MorningPeakBanner.jsx'
 import { UVAlert }             from './components/UVAlert.jsx'
@@ -19,9 +18,13 @@ import { HistoryPage, saveHistoryEntry, loadHistory } from './components/History
 import { SettingsPage, loadSettings } from './components/SettingsPage.jsx'
 import { DailyMoodPrompt } from './components/DailyMoodPrompt.jsx'
 import { InstallHint } from './components/InstallHint.jsx'
+import { TomorrowCard } from './components/TomorrowCard.jsx'
+import { WeeklyPattern } from './components/WeeklyPattern.jsx'
+import { LogoMark } from './components/LogoMark.jsx'
 
 const TABS = ['home', 'history', 'settings']
-const TAB_ICONS  = { home: '🏠', history: '📋', settings: '⚙️' }
+const TAB_LABELS = { home: 'Home', history: 'History', settings: 'Settings' }
+const TAB_ICONS  = { home: '⬜', history: '☰', settings: '◎' }
 
 export default function App() {
   const [tab, setTab]                       = useState('home')
@@ -115,14 +118,13 @@ export default function App() {
   return (
     <div className="flex flex-col h-full max-w-[420px] mx-auto relative bg-[#0a0a0a]">
       {/* Header */}
-      <header className="px-4 pt-3 pb-3 flex items-center justify-between border-b border-zinc-900/60 flex-shrink-0">
-        <h1 className="text-white font-bold text-[22px] tracking-tight">Layers</h1>
-        <button
-          onClick={refresh}
-          className="text-zinc-500 hover:text-white transition-colors text-xl"
-          title="Refresh weather"
-        >
-          🔄
+      <header className="px-4 pt-3 pb-3 flex items-center justify-between border-b border-zinc-900/50 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <LogoMark size={28}/>
+          <h1 className="text-white font-bold text-lg tracking-tight">Layers</h1>
+        </div>
+        <button onClick={refresh} className="text-zinc-600 hover:text-white transition-colors text-base" title="Refresh">
+          ↻
         </button>
       </header>
 
@@ -151,12 +153,13 @@ export default function App() {
 
             {weather && (
               <>
-                <WeatherDisplay weather={weather} location={location} />
-                <OutfitCard outfitData={outfitData} onLogWorn={handleLogWorn} ownedIds={prefs.wardrobe} />
+                <WeatherDisplay weather={weather} location={location} hourly={hourly}/>
+                <OutfitCard outfitData={outfitData} onLogWorn={handleLogWorn} ownedIds={prefs.wardrobe} onFeedback={handleFeedback}/>
+                <TomorrowCard hourly={hourly} preferences={prefs}/>
                 <PackSomethingBanner alert={eveningAlert} />
                 <MorningPeakBanner peak={morningPeak} />
                 <UVAlert weather={weather} hourly={hourly} settings={settings} />
-                <FeedbackRow onFeedback={handleFeedback} />
+                <WeeklyPattern feedbackLog={prefs.feedbackLog} bucketAdjustments={prefs.bucketAdjustments}/>
                 <DailyMoodPrompt
                   hour={outfitData?.hour ?? new Date().getHours()}
                   dailyMoodLog={prefs.dailyMoodLog}
@@ -215,21 +218,24 @@ export default function App() {
             onResetOnboarding={resetOnboarding}
             wardrobe={prefs.wardrobe ?? []}
             onWardrobeChange={setWardrobe}
+            customExtras={prefs.customExtras ?? []}
+            onAddCustom={addCustomExtra}
+            onRemoveCustom={removeCustomExtra}
           />
         )}
       </main>
 
       {/* Bottom tab bar */}
-      <nav className="flex border-t border-zinc-900 bg-zinc-950 flex-shrink-0">
+      <nav className="flex border-t border-zinc-900/60 bg-zinc-950/95 flex-shrink-0">
         {TABS.map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 py-3 text-xs flex flex-col items-center gap-0.5 transition-colors
+            className={`flex-1 py-3.5 text-xs flex flex-col items-center gap-1 transition-colors
               ${tab === t ? 'text-indigo-400' : 'text-zinc-600 hover:text-zinc-400'}`}
           >
-            <span className="text-xl leading-none">{TAB_ICONS[t]}</span>
-            <span className="capitalize">{t}</span>
+            <span className={`w-5 h-0.5 rounded-full transition-all ${tab === t ? 'bg-indigo-400' : 'bg-transparent'}`}/>
+            <span>{TAB_LABELS[t]}</span>
           </button>
         ))}
       </nav>

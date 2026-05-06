@@ -14,7 +14,7 @@ export function saveSettings(settings) {
   localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(settings))
 }
 
-export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange }) {
+export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange, customExtras = [], onAddCustom, onRemoveCustom }) {
   const [wardrobeOpen, setWardrobeOpen] = useState(false)
   const [settings, setSettings] = useState(() => ({
     eveningCheckHour: 19,
@@ -48,7 +48,14 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
         </button>
         {wardrobeOpen && (
           <div className="px-4 pb-4">
-            <WardrobeSelect selected={wardrobe} onChange={onWardrobeChange} dense />
+            <WardrobeSelect
+              selected={wardrobe}
+              onChange={onWardrobeChange}
+              customExtras={customExtras}
+              onAddCustom={onAddCustom}
+              onRemoveCustom={onRemoveCustom}
+              dense
+            />
           </div>
         )}
       </Section>

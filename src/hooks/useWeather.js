@@ -6,7 +6,7 @@ const GEO_URL  = 'https://geocoding-api.open-meteo.com/v1/search'
 const HOURLY_VARS = 'temperature_2m,apparent_temperature,precipitation_probability,weathercode,windspeed_10m,uv_index'
 
 async function fetchWeather(lat, lon) {
-  const url = `${BASE_URL}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${HOURLY_VARS}&forecast_days=1&timezone=auto&current=temperature_2m,apparent_temperature,precipitation_probability,windspeed_10m,weathercode,uv_index`
+  const url = `${BASE_URL}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${HOURLY_VARS}&forecast_days=2&timezone=auto&current=temperature_2m,apparent_temperature,precipitation_probability,windspeed_10m,weathercode,uv_index`
   const res = await fetch(url)
   if (!res.ok) throw new Error('Weather fetch failed')
   return res.json()
