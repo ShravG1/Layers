@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { WARDROBE_CATALOG, EMOJI_PICKER_OPTIONS } from '../utils/wardrobe.js'
 
 const SECTIONS = [
@@ -11,28 +12,50 @@ const SECTIONS = [
 
 function EmojiPicker({ value, onChange }) {
   const [open, setOpen] = useState(false)
+  const btnRef = useRef(null)
+  const [rect, setRect] = useState(null)
+
+  const handleOpen = () => {
+    if (btnRef.current) {
+      setRect(btnRef.current.getBoundingClientRect())
+    }
+    setOpen(o => !o)
+  }
+
   return (
-    <div className="relative">
+    <div>
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen(o => !o)}
+        onClick={handleOpen}
         className="w-10 h-10 text-xl bg-zinc-800 border border-zinc-700 rounded-xl flex items-center justify-center"
       >
         {value || '❓'}
       </button>
-      {open && (
-        <div className="absolute z-30 top-12 left-0 bg-zinc-900 border border-zinc-700 rounded-2xl p-2 grid grid-cols-7 gap-1 w-56 shadow-xl">
-          {EMOJI_PICKER_OPTIONS.map(e => (
-            <button
-              key={e}
-              type="button"
-              onClick={() => { onChange(e); setOpen(false) }}
-              className="text-xl w-7 h-7 flex items-center justify-center hover:bg-zinc-700 rounded-lg"
-            >
-              {e}
-            </button>
-          ))}
-        </div>
+      {open && rect && createPortal(
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)}/>
+          <div
+            className="fixed z-50 bg-zinc-900 border border-zinc-700 rounded-2xl p-2 grid grid-cols-7 gap-1 shadow-2xl"
+            style={{
+              top: rect.bottom + 8,
+              left: Math.min(rect.left, window.innerWidth - 244),
+              width: 236,
+            }}
+          >
+            {EMOJI_PICKER_OPTIONS.map(e => (
+              <button
+                key={e}
+                type="button"
+                onClick={() => { onChange(e); setOpen(false) }}
+                className="text-xl w-8 h-8 flex items-center justify-center hover:bg-zinc-700 rounded-lg"
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        </>,
+        document.body
       )}
     </div>
   )

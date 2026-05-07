@@ -28,7 +28,7 @@ import { LogoMark } from './components/LogoMark.jsx'
 
 const TABS = ['home', 'history', 'settings']
 const TAB_LABELS = { home: 'Home', history: 'History', settings: 'Settings' }
-const TAB_ICONS  = { home: '⬜', history: '☰', settings: '◎' }
+const TAB_ICONS  = { home: '🏠', history: '📅', settings: '⚙️' }
 
 export default function App() {
   const [tab, setTab]                       = useState('home')
@@ -189,12 +189,12 @@ export default function App() {
                   onFeedback={handleFeedback}
                   feedbackLog={prefs.feedbackLog}
                 />
-                <TomorrowCard hourly={hourly} preferences={prefs}/>
-                <PackSomethingBanner alert={eveningAlert} />
+                {(settings.tomorrowPreviewEnabled ?? true) && <TomorrowCard hourly={hourly} preferences={prefs}/>}
+                {(settings.intradayDropEnabled ?? true) && <PackSomethingBanner alert={eveningAlert} />}
                 <MorningPeakBanner peak={morningPeak} />
-                <UVAlert weather={weather} hourly={hourly} settings={settings} />
-                <RainTimeline hourly={hourly}/>
-                <WeeklyForecast daily={daily} unit={settings.tempUnit ?? '°C'}/>
+                {(settings.uvAlertsEnabled ?? true) && <UVAlert weather={weather} hourly={hourly} settings={settings} />}
+                {(settings.rainAlertEnabled ?? true) && <RainTimeline hourly={hourly}/>}
+                {(settings.weeklyForecastEnabled ?? true) && <WeeklyForecast daily={daily} unit={settings.tempUnit ?? '°C'}/>}
                 <WeeklyPattern feedbackLog={prefs.feedbackLog} bucketAdjustments={prefs.bucketAdjustments}/>
                 <DailyMoodPrompt
                   hour={outfitData?.hour ?? new Date().getHours()}
@@ -262,16 +262,19 @@ export default function App() {
       </main>
 
       {/* Bottom tab bar */}
-      <nav className="flex border-t border-zinc-900/60 bg-zinc-950/95 flex-shrink-0">
+      <nav className="flex border-t border-zinc-800/60 bg-zinc-950 flex-shrink-0">
         {TABS.map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 py-3.5 text-xs flex flex-col items-center gap-1 transition-colors
-              ${tab === t ? 'text-indigo-400' : 'text-zinc-600 hover:text-zinc-400'}`}
+            className={`flex-1 pt-3 pb-3 text-[11px] flex flex-col items-center gap-1.5 transition-colors active:scale-95
+              ${tab === t ? 'text-indigo-400' : 'text-zinc-600'}`}
           >
-            <span className={`w-5 h-0.5 rounded-full transition-all ${tab === t ? 'bg-indigo-400' : 'bg-transparent'}`}/>
-            <span>{TAB_LABELS[t]}</span>
+            <span className={`text-xl leading-none transition-transform ${tab === t ? 'scale-110' : 'scale-100 opacity-50'}`}>
+              {TAB_ICONS[t]}
+            </span>
+            <span className={`font-medium ${tab === t ? 'text-indigo-400' : 'text-zinc-600'}`}>{TAB_LABELS[t]}</span>
+            {tab === t && <span className="w-1 h-1 rounded-full bg-indigo-400"/>}
           </button>
         ))}
       </nav>

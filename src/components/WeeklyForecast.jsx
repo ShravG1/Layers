@@ -10,8 +10,8 @@ export function WeeklyForecast({ daily, unit = '°C' }) {
   const days = daily.time.map((t, i) => ({
     date: t,
     isToday: t === today,
-    label: t === today ? 'Today' : DAY_NAMES[new Date(t).getDay()],
-    code: daily.weathercode?.[i] ?? 0,
+    label: t === today ? 'Today' : DAY_NAMES[new Date(t + 'T12:00:00').getDay()],
+    code: daily.weathercode?.[i] ?? daily.weather_code?.[i] ?? 0,
     high: daily.apparent_temperature_max?.[i] ?? daily.temperature_2m_max?.[i],
     low:  daily.apparent_temperature_min?.[i] ?? daily.temperature_2m_min?.[i],
     rain: daily.precipitation_probability_max?.[i] ?? 0,

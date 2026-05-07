@@ -22,6 +22,12 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
     notifTime: '07:30',
     dressForDayEnabled: true,
     uvAlertsEnabled: true,
+    windAdvisoryEnabled: true,
+    rainAlertEnabled: true,
+    humidityAdvisoryEnabled: true,
+    intradayDropEnabled: true,
+    tomorrowPreviewEnabled: true,
+    weeklyForecastEnabled: true,
     ...loadSettings(),
   }))
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -105,13 +111,31 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
         </Row>
       </Section>
 
-      {/* Morning features */}
-      <Section title="Morning Features">
-        <Row label="Dress for the Day mode">
+      {/* Daily Features */}
+      <Section title="Daily Features">
+        <Row label="Outfit recommendations">
           <Toggle value={settings.dressForDayEnabled} onChange={v => update('dressForDayEnabled', v)} />
+        </Row>
+        <Row label="Tomorrow preview">
+          <Toggle value={settings.tomorrowPreviewEnabled} onChange={v => update('tomorrowPreviewEnabled', v)} />
+        </Row>
+        <Row label="7-day forecast">
+          <Toggle value={settings.weeklyForecastEnabled} onChange={v => update('weeklyForecastEnabled', v)} />
+        </Row>
+        <Row label="Pack reminders">
+          <Toggle value={settings.intradayDropEnabled} onChange={v => update('intradayDropEnabled', v)} />
         </Row>
         <Row label="UV alerts">
           <Toggle value={settings.uvAlertsEnabled} onChange={v => update('uvAlertsEnabled', v)} />
+        </Row>
+        <Row label="Wind advisory">
+          <Toggle value={settings.windAdvisoryEnabled} onChange={v => update('windAdvisoryEnabled', v)} />
+        </Row>
+        <Row label="Rain alerts">
+          <Toggle value={settings.rainAlertEnabled} onChange={v => update('rainAlertEnabled', v)} />
+        </Row>
+        <Row label="Humidity advisory">
+          <Toggle value={settings.humidityAdvisoryEnabled} onChange={v => update('humidityAdvisoryEnabled', v)} />
         </Row>
       </Section>
 
