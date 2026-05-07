@@ -33,6 +33,6 @@ export function useEveningForecast({ hourly, currentFeelsLike, settings }) {
       message = `Rain expected this evening — throw an umbrella in your bag`
     }
 
-    return { message, coldWarning, rainWarning, eveningFeelsLike: evening.avgFeelsLike }
+    return { message, coldWarning, rainWarning, maxRainProb: evening.maxRainProb, eveningFeelsLike: evening.avgFeelsLike }
   }, [hourly, currentFeelsLike, settings])
 }

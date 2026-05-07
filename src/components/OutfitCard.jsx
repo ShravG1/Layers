@@ -17,19 +17,38 @@ const RATINGS = [
   { val: 'warm', emoji: '🔥', label: 'Too warm' },
 ]
 
-export function OutfitCard({ outfitData, onLogWorn, ownedIds, onFeedback }) {
+function calcStreak(feedbackLog) {
+  if (!feedbackLog?.length) return 0
+  const dates = [...new Set(feedbackLog.map(e => new Date(e.timestamp).toISOString().slice(0, 10)))].sort().reverse()
+  const today = new Date().toISOString().slice(0, 10)
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+  if (dates[0] !== today && dates[0] !== yesterday) return 0
+  let streak = 0
+  let expected = dates[0] === today ? today : yesterday
+  for (const d of dates) {
+    if (d === expected) {
+      streak++
+      expected = new Date(new Date(expected).getTime() - 86400000).toISOString().slice(0, 10)
+    } else break
+  }
+  return streak
+}
+
+export function OutfitCard({ outfitData, onLogWorn, ownedIds, onFeedback, feedbackLog }) {
   const [showModal, setShowModal] = useState(false)
   const [logged, setLogged] = useState(false)
   const [rated, setRated] = useState(null)
 
   if (!outfitData) return null
   const { items, isMorningOrEvening, hour } = outfitData
+  const streak = calcStreak(feedbackLog)
   const main   = items.filter(i => i.tier === 'main')
   const extras = items.filter(i => i.tier === 'extra')
   const tiny   = items.filter(i => i.tier === 'tiny')
 
   const handleRate = (val) => {
     if (rated) return
+    navigator.vibrate?.(10)
     setRated(val)
     onFeedback?.(val)
   }
@@ -80,7 +99,14 @@ export function OutfitCard({ outfitData, onLogWorn, ownedIds, onFeedback }) {
 
         {/* Rating row */}
         <div className="px-4 pt-3 pb-3 mt-2 border-t border-zinc-800/40">
-          <p className="text-zinc-600 text-[10px] mb-2 text-center">How does this feel for you?</p>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <p className="text-zinc-600 text-[10px]">How does this feel for you?</p>
+            {streak >= 2 && (
+              <span className="text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-full">
+                🔥 {streak} day streak
+              </span>
+            )}
+          </div>
           <div className="flex gap-2">
             {RATINGS.map(r => (
               <button

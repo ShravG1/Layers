@@ -16,6 +16,18 @@ export function kmhToMph(kmh) {
   return Math.round(kmh / 1.609)
 }
 
+// Temperature display helpers
+export function toF(c) { return Math.round(c * 9 / 5 + 32) }
+export function displayTemp(c, unit) {
+  if (c == null) return '—'
+  return unit === '°F' ? `${toF(c)}°F` : `${Math.round(c)}°C`
+}
+export function displayTempNum(c, unit) {
+  if (c == null) return null
+  return unit === '°F' ? toF(c) : Math.round(c)
+}
+export function tempSymbol(unit) { return unit === '°F' ? '°F' : '°C' }
+
 // Map weathercode to emoji
 export function conditionEmoji(code) {
   if (code === 0) return '☀️'

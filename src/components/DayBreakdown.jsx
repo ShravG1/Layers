@@ -1,4 +1,4 @@
-import { kmhToMph } from '../utils/weatherHelpers.js'
+import { kmhToMph, displayTempNum, tempSymbol } from '../utils/weatherHelpers.js'
 
 function HourlyBar({ hour, feelsLike, actual, rain, isCurrent, min, max }) {
   const range = max - min || 1
@@ -19,7 +19,7 @@ function HourlyBar({ hour, feelsLike, actual, rain, isCurrent, min, max }) {
   )
 }
 
-export function DayBreakdown({ hourly, weather, onClose }) {
+export function DayBreakdown({ hourly, weather, unit = '°C', onClose }) {
   if (!hourly?.time) return null
 
   const today = new Date().toISOString().slice(0, 10)
@@ -45,8 +45,9 @@ export function DayBreakdown({ hourly, weather, onClose }) {
   const feelsMin = Math.min(...hours.map(h => h.feelsLike))
   const feelsMax = Math.max(...hours.map(h => h.feelsLike))
 
-  const feelsLike = Math.round(weather.apparent_temperature ?? weather.temperature_2m ?? 0)
-  const actual    = Math.round(weather.temperature_2m ?? feelsLike)
+  const sym       = tempSymbol(unit)
+  const feelsLike = displayTempNum(weather.apparent_temperature ?? weather.temperature_2m ?? 0, unit)
+  const actual    = displayTempNum(weather.temperature_2m ?? weather.apparent_temperature ?? 0, unit)
   const windMph   = Math.round(kmhToMph(weather.windspeed_10m ?? 0))
   const rain      = Math.round(weather.precipitation_probability ?? 0)
   const uv        = weather.uv_index ?? 0
@@ -83,12 +84,12 @@ export function DayBreakdown({ hourly, weather, onClose }) {
           <div className="flex gap-3 mb-5">
             <div className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-3 text-center">
               <p className="text-zinc-500 text-[10px] uppercase tracking-wide mb-0.5">Feels like</p>
-              <p className="text-white text-3xl font-black">{feelsLike}°</p>
+              <p className="text-white text-3xl font-black">{feelsLike}{sym}</p>
               <p className="text-indigo-400 text-[10px] mt-0.5">What to dress for</p>
             </div>
             <div className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-3 text-center">
               <p className="text-zinc-500 text-[10px] uppercase tracking-wide mb-0.5">Actual temp</p>
-              <p className="text-zinc-300 text-3xl font-black">{actual}°</p>
+              <p className="text-zinc-300 text-3xl font-black">{actual}{sym}</p>
               <p className="text-zinc-600 text-[10px] mt-0.5">Air temperature</p>
             </div>
           </div>

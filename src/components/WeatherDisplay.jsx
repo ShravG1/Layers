@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { WeatherIcon } from './WeatherIcon.jsx'
-import { wmoLabel, kmhToMph } from '../utils/weatherHelpers.js'
+import { wmoLabel, kmhToMph, displayTempNum, tempSymbol } from '../utils/weatherHelpers.js'
 import { DayBreakdown } from './DayBreakdown.jsx'
 
-function TempArc({ min, max, current }) {
+function TempArc({ min, max, current, unit = '°C' }) {
   if (min == null || max == null || min === max) return null
+  const conv = c => unit === '°F' ? Math.round(c * 9/5 + 32) : Math.round(c)
   const pct = Math.max(0, Math.min(1, (current - min) / (max - min)))
   const R = 44, cx = 54, cy = 54
   const toXY = (a) => [cx + R * Math.cos(a), cy + R * Math.sin(a)]
@@ -19,23 +20,26 @@ function TempArc({ min, max, current }) {
       <path d={`M ${sx} ${sy} A ${R} ${R} 0 0 1 ${dx} ${dy}`}
         fill="none" stroke="#6366f1" strokeWidth="4" strokeLinecap="round"/>
       <circle cx={dx} cy={dy} r="4.5" fill="#a5b4fc"/>
-      <text x="2"   y="58" fontSize="9" fill="#52525b">{Math.round(min)}°</text>
-      <text x="88"  y="58" fontSize="9" fill="#52525b">{Math.round(max)}°</text>
+      <text x="2"   y="58" fontSize="9" fill="#52525b">{conv(min)}°</text>
+      <text x="88"  y="58" fontSize="9" fill="#52525b">{conv(max)}°</text>
     </svg>
   )
 }
 
-export function WeatherDisplay({ weather, location, hourly }) {
+export function WeatherDisplay({ weather, location, hourly, unit = '°C', onLocationTap }) {
   const [showBreakdown, setShowBreakdown] = useState(false)
   if (!weather) return null
 
-  const feelsLike = Math.round(weather.apparent_temperature ?? weather.temperature_2m ?? 0)
-  const temp      = Math.round(weather.temperature_2m ?? feelsLike)
+  const feelsLikeC = weather.apparent_temperature ?? weather.temperature_2m ?? 0
+  const tempC      = weather.temperature_2m ?? feelsLikeC
+  const feelsLike  = displayTempNum(feelsLikeC, unit)
+  const temp       = displayTempNum(tempC, unit)
+  const sym        = tempSymbol(unit)
   const windMph   = Math.round(kmhToMph(weather.windspeed_10m ?? 0))
   const rainProb  = Math.round(weather.precipitation_probability ?? 0)
   const code      = weather.weathercode ?? 0
   const { label, condition } = wmoLabel(code)
-  const gap = temp - feelsLike
+  const gap = tempC - feelsLikeC   // always in °C for logic
 
   let todayMin = null, todayMax = null
   if (hourly?.apparent_temperature && hourly?.time) {
@@ -50,9 +54,12 @@ export function WeatherDisplay({ weather, location, hourly }) {
     <>
       <div className="animate-fade-in mx-4 mt-3 rounded-2xl glass-card p-5">
         {location?.name && (
-          <p className="text-zinc-500 text-xs mb-3 flex items-center gap-1">
-            <span>📍</span><span>{location.name}</span>
-          </p>
+          <button
+            onClick={onLocationTap}
+            className="text-zinc-500 text-xs mb-3 flex items-center gap-1 active:opacity-70 transition-opacity"
+          >
+            <span>📍</span><span>{location.name}</span><span className="text-zinc-700 text-[10px]">▾</span>
+          </button>
         )}
 
         <div className="flex items-start justify-between">
@@ -65,12 +72,12 @@ export function WeatherDisplay({ weather, location, hourly }) {
               Feels like
             </p>
             <div className="text-[80px] font-black text-white leading-none tracking-tighter">
-              {feelsLike}°
+              {feelsLike}{sym}
             </div>
             <div className="text-zinc-400 text-sm mt-1.5">{label}</div>
-            {gap !== 0 && (
+            {Math.abs(gap) > 1 && (
               <div className="text-xs mt-1 text-zinc-600">
-                Actually {temp}° · {Math.abs(gap)}° {gap > 0 ? 'colder' : 'warmer'} due to {windMph > 10 ? 'wind' : 'humidity'}
+                Actually {temp}{sym} · {displayTempNum(Math.abs(gap), unit)}{sym} {gap > 0 ? 'colder' : 'warmer'} due to {windMph > 10 ? 'wind' : 'humidity'}
               </div>
             )}
             <p className="text-indigo-500 text-[10px] mt-2">Tap for day breakdown →</p>
@@ -79,7 +86,7 @@ export function WeatherDisplay({ weather, location, hourly }) {
           {/* Right: icon + arc */}
           <div className="flex flex-col items-center gap-2 pt-1">
             <WeatherIcon condition={condition} size={52}/>
-            <TempArc min={todayMin} max={todayMax} current={feelsLike}/>
+            <TempArc min={todayMin} max={todayMax} current={feelsLikeC} unit={unit}/>
           </div>
         </div>
 
@@ -94,6 +101,7 @@ export function WeatherDisplay({ weather, location, hourly }) {
         <DayBreakdown
           hourly={hourly}
           weather={weather}
+          unit={unit}
           onClose={() => setShowBreakdown(false)}
         />
       )}

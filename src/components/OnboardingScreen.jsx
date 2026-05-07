@@ -11,7 +11,7 @@ const PROFILES = [
 export function OnboardingScreen({ onComplete }) {
   const [step, setStep] = useState(0)
   const [profile, setProfile] = useState(null)
-  const [wardrobe, setWardrobe] = useState(DEFAULT_WARDROBE)
+  const [wardrobe, setWardrobe] = useState([])  // start empty — user picks what they own
 
   // Step 0: Welcome + thermal profile
   if (step === 0) {
@@ -58,8 +58,11 @@ export function OnboardingScreen({ onComplete }) {
         <button onClick={() => setStep(0)} className="text-zinc-500 text-sm mb-2">← Back</button>
         <h2 className="text-white font-bold text-2xl tracking-tight">Your wardrobe</h2>
         <p className="text-zinc-500 text-sm mt-1">
-          Pick what you actually own. We'll only recommend from these.
+          Tap what you actually own. We'll only ever recommend from these.
         </p>
+        {wardrobe.length > 0 && (
+          <p className="text-indigo-400 text-xs mt-1">{wardrobe.length} items selected</p>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 pb-4">

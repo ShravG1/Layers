@@ -30,6 +30,7 @@ export default function App() {
   const [tab, setTab]                       = useState('home')
   const [settings, setSettings]             = useState(loadSettings)
   const [notifPromptShown, setNotifPromptShown] = useState(false)
+  const [showLocationSearch, setShowLocationSearch] = useState(false)
 
   const {
     weather, hourly, location, loading, error,
@@ -153,8 +154,20 @@ export default function App() {
 
             {weather && (
               <>
-                <WeatherDisplay weather={weather} location={location} hourly={hourly}/>
-                <OutfitCard outfitData={outfitData} onLogWorn={handleLogWorn} ownedIds={prefs.wardrobe} onFeedback={handleFeedback}/>
+                <WeatherDisplay
+                  weather={weather}
+                  location={location}
+                  hourly={hourly}
+                  unit={settings.tempUnit ?? '°C'}
+                  onLocationTap={() => setShowLocationSearch(true)}
+                />
+                <OutfitCard
+                  outfitData={outfitData}
+                  onLogWorn={handleLogWorn}
+                  ownedIds={prefs.wardrobe}
+                  onFeedback={handleFeedback}
+                  feedbackLog={prefs.feedbackLog}
+                />
                 <TomorrowCard hourly={hourly} preferences={prefs}/>
                 <PackSomethingBanner alert={eveningAlert} />
                 <MorningPeakBanner peak={morningPeak} />
@@ -239,6 +252,23 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      {/* Location change overlay */}
+      {showLocationSearch && (
+        <div className="fixed inset-0 z-50 bg-zinc-950/95 flex flex-col pt-[max(env(safe-area-inset-top),1rem)]">
+          <div className="px-4 pb-3 flex items-center gap-3 border-b border-zinc-800">
+            <button onClick={() => setShowLocationSearch(false)} className="text-zinc-400 text-sm">← Back</button>
+            <h2 className="text-white font-semibold text-sm">Change location</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <LocationSearch
+              onSearch={searchLocation}
+              onSelect={(loc) => { selectLocation(loc); setShowLocationSearch(false) }}
+              hint="Search for a city or postcode"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Toast for preference auto-adjustments */}
       {prefs.pendingToast && (

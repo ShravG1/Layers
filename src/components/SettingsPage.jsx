@@ -86,6 +86,25 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
         </Row>
       </Section>
 
+      {/* Units */}
+      <Section title="Units">
+        <Row label="Temperature">
+          <div className="flex rounded-lg overflow-hidden border border-zinc-700">
+            {['°C', '°F'].map(u => (
+              <button
+                key={u}
+                onClick={() => update('tempUnit', u)}
+                className={`px-3 py-1.5 text-sm transition-colors ${
+                  (settings.tempUnit ?? '°C') === u
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                }`}
+              >{u}</button>
+            ))}
+          </div>
+        </Row>
+      </Section>
+
       {/* Morning features */}
       <Section title="Morning Features">
         <Row label="Dress for the Day mode">
