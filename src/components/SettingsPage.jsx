@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePushNotifications } from '../hooks/usePushNotifications.js'
+import { WardrobeSelect } from './WardrobeSelect.jsx'
 
 const LS_SETTINGS_KEY = 'wtw_settings'
 
@@ -13,13 +14,20 @@ export function saveSettings(settings) {
   localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(settings))
 }
 
-export function SettingsPage({ onResetPrefs, onResetOnboarding }) {
+export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange, customExtras = [], onAddCustom, onRemoveCustom, onShowReinstall }) {
+  const [wardrobeOpen, setWardrobeOpen] = useState(false)
   const [settings, setSettings] = useState(() => ({
     eveningCheckHour: 19,
     eveningTempDrop: 4,
     notifTime: '07:30',
     dressForDayEnabled: true,
     uvAlertsEnabled: true,
+    windAdvisoryEnabled: true,
+    rainAlertEnabled: true,
+    humidityAdvisoryEnabled: true,
+    intradayDropEnabled: true,
+    tomorrowPreviewEnabled: true,
+    weeklyForecastEnabled: true,
     ...loadSettings(),
   }))
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -34,6 +42,29 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding }) {
   return (
     <div className="overflow-y-auto h-full pb-24 px-4 pt-4">
       <h2 className="text-white font-semibold text-lg mb-5">Settings</h2>
+
+      {/* Wardrobe */}
+      <Section title="Wardrobe">
+        <button
+          onClick={() => setWardrobeOpen(o => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+        >
+          <span className="text-zinc-300 text-sm">Edit my wardrobe</span>
+          <span className="text-zinc-500 text-xs">{wardrobe.length} items · {wardrobeOpen ? '▲' : '▼'}</span>
+        </button>
+        {wardrobeOpen && (
+          <div className="px-4 pb-4">
+            <WardrobeSelect
+              selected={wardrobe}
+              onChange={onWardrobeChange}
+              customExtras={customExtras}
+              onAddCustom={onAddCustom}
+              onRemoveCustom={onRemoveCustom}
+              dense
+            />
+          </div>
+        )}
+      </Section>
 
       {/* Evening alerts */}
       <Section title="Evening Alerts">
@@ -61,13 +92,50 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding }) {
         </Row>
       </Section>
 
-      {/* Morning features */}
-      <Section title="Morning Features">
-        <Row label="Dress for the Day mode">
+      {/* Units */}
+      <Section title="Units">
+        <Row label="Temperature">
+          <div className="flex rounded-lg overflow-hidden border border-zinc-700">
+            {['°C', '°F'].map(u => (
+              <button
+                key={u}
+                onClick={() => update('tempUnit', u)}
+                className={`px-3 py-1.5 text-sm transition-colors ${
+                  (settings.tempUnit ?? '°C') === u
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                }`}
+              >{u}</button>
+            ))}
+          </div>
+        </Row>
+      </Section>
+
+      {/* Daily Features */}
+      <Section title="Daily Features">
+        <Row label="Outfit recommendations">
           <Toggle value={settings.dressForDayEnabled} onChange={v => update('dressForDayEnabled', v)} />
+        </Row>
+        <Row label="Tomorrow preview">
+          <Toggle value={settings.tomorrowPreviewEnabled} onChange={v => update('tomorrowPreviewEnabled', v)} />
+        </Row>
+        <Row label="7-day forecast">
+          <Toggle value={settings.weeklyForecastEnabled} onChange={v => update('weeklyForecastEnabled', v)} />
+        </Row>
+        <Row label="Pack reminders">
+          <Toggle value={settings.intradayDropEnabled} onChange={v => update('intradayDropEnabled', v)} />
         </Row>
         <Row label="UV alerts">
           <Toggle value={settings.uvAlertsEnabled} onChange={v => update('uvAlertsEnabled', v)} />
+        </Row>
+        <Row label="Wind advisory">
+          <Toggle value={settings.windAdvisoryEnabled} onChange={v => update('windAdvisoryEnabled', v)} />
+        </Row>
+        <Row label="Rain alerts">
+          <Toggle value={settings.rainAlertEnabled} onChange={v => update('rainAlertEnabled', v)} />
+        </Row>
+        <Row label="Humidity advisory">
+          <Toggle value={settings.humidityAdvisoryEnabled} onChange={v => update('humidityAdvisoryEnabled', v)} />
         </Row>
       </Section>
 
@@ -110,9 +178,15 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding }) {
         </button>
         <button
           onClick={onResetOnboarding}
-          className="w-full py-2.5 bg-zinc-800 text-zinc-500 rounded-xl text-sm hover:bg-zinc-700 transition-colors"
+          className="w-full py-2.5 bg-zinc-800 text-zinc-500 rounded-xl text-sm hover:bg-zinc-700 transition-colors mb-2"
         >
           Reset onboarding (testing)
+        </button>
+        <button
+          onClick={onShowReinstall}
+          className="w-full py-2.5 bg-zinc-800 text-zinc-500 rounded-xl text-sm hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2"
+        >
+          <span>🔄</span><span>App not updating? Reinstall guide</span>
         </button>
       </Section>
 

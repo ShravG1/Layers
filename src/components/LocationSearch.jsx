@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export function LocationSearch({ onSearch, onSelect }) {
+export function LocationSearch({ onSearch, onSelect, hint }) {
   const [query, setQuery]     = useState('')
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -17,7 +17,7 @@ export function LocationSearch({ onSearch, onSelect }) {
   return (
     <div className="mx-4 mt-4 animate-fade-in">
       <p className="text-zinc-400 text-sm text-center mb-3">
-        Location access denied — search for your city or postcode
+        {hint ?? 'Location access denied — search for your city or postcode'}
       </p>
       <form onSubmit={handleSearch} className="flex gap-2">
         <input

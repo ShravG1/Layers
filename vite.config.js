@@ -11,11 +11,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'WhatToWear',
-        short_name: 'WhatToWear',
-        description: 'Clothing recommendations based on live weather at your location',
-        theme_color: '#0f0f0f',
-        background_color: '#0f0f0f',
+        name: 'Layers',
+        short_name: 'Layers',
+        description: 'Smart layer recommendations based on live weather and how you actually feel',
+        theme_color: '#0a0a0a',
+        background_color: '#0a0a0a',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -26,18 +26,12 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\.open-meteo\.com\/.*/,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'weather-api', expiration: { maxAgeSeconds: 600 } },
-          },
-          {
-            urlPattern: /^https:\/\/geocoding-api\.open-meteo\.com\/.*/,
-            handler: 'CacheFirst',
-            options: { cacheName: 'geocoding-api', expiration: { maxAgeSeconds: 86400 } },
-          },
-        ],
+        importScripts: ['/push-handler.js'],
+        // Don't intercept external API calls — let the browser handle them.
+        // When NetworkFirst has no cache and the network fails it throws a fatal
+        // "no-response" error that kills the whole fetch rather than letting the
+        // app's own error handling take over.
+        navigateFallback: '/index.html',
       },
     }),
   ],

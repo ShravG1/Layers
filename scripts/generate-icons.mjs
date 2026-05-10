@@ -1,4 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+// Generates all PWA icon PNGs from an SVG using sharp.
+import sharp from 'sharp'
+import { readFileSync, writeFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import path from 'path'
+
+const __dir = path.dirname(fileURLToPath(import.meta.url))
+const pub = path.join(__dir, '../public')
+
+// The icon SVG — 3D stacked layers mark, indigo gradient.
+// Three rectangular slabs offset in Y and X to simulate depth.
+const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#111118"/>
@@ -45,4 +56,30 @@
   <!-- Highlight on front slab -->
   <rect x="130" y="210" width="90" height="9" rx="4.5"
         fill="white" opacity="0.22"/>
-</svg>
+</svg>`
+
+async function generate() {
+  const sizes = [
+    { name: 'icon-192.png',       size: 192, rounded: true },
+    { name: 'icon-512.png',       size: 512, rounded: true },
+    { name: 'apple-touch-icon.png', size: 180, rounded: false },
+    { name: 'icon.svg',           size: null },
+  ]
+
+  const buf = Buffer.from(SVG)
+
+  for (const { name, size, rounded } of sizes) {
+    if (name.endsWith('.svg')) {
+      writeFileSync(path.join(pub, name), SVG, 'utf8')
+      console.log('wrote', name)
+      continue
+    }
+    await sharp(buf)
+      .resize(size, size)
+      .png()
+      .toFile(path.join(pub, name))
+    console.log('wrote', name, size + 'x' + size)
+  }
+}
+
+generate().catch(e => { console.error(e); process.exit(1) })
