@@ -14,9 +14,8 @@
     overscroll-behavior: none;
   }
   body {
-    /* Safe-area aware: avoids Dynamic Island / home indicator overlap */
+    /* Safe-area top for Dynamic Island only — bottom is handled by the nav bar */
     padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }

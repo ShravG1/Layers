@@ -269,7 +269,7 @@ export default function App() {
       </main>
 
       {/* Bottom tab bar */}
-      <nav className="flex border-t border-zinc-800/60 bg-zinc-950 flex-shrink-0">
+      <nav className="flex border-t border-zinc-800/60 bg-zinc-950 flex-shrink-0 pb-[env(safe-area-inset-bottom)]">
         {TABS.map(t => (
           <button
             key={t}
