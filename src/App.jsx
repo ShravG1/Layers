@@ -144,16 +144,21 @@ export default function App() {
       </header>
 
       {/* Main content area */}
-      <main className="flex-1 min-h-0 relative">
+      <main className="flex-1 min-h-0 relative overflow-hidden">
         {/* HOME TAB */}
         {tab === 'home' && (
-          <div ref={homeScrollRef} className="h-full overflow-y-auto pb-6 relative" style={{ transform: `translateY(${pull}px)`, transition: pull === 0 ? 'transform 0.2s ease' : 'none' }}>
-            {/* Pull-to-refresh indicator */}
+          <>
+            {/* Pull-to-refresh indicator — sits above the scroll container, no transform on scroller */}
             {(pull > 0 || refreshing) && (
-              <div className="absolute -top-12 left-0 right-0 flex justify-center" style={{ opacity: Math.min(pull / triggerDistance, 1) }}>
-                <div className={`w-8 h-8 border-2 rounded-full ${refreshing ? 'border-indigo-500 border-t-transparent animate-spin' : 'border-zinc-600 border-t-indigo-500'}`} style={{ transform: refreshing ? 'none' : `rotate(${pull * 4}deg)` }}/>
+              <div
+                className="absolute top-0 left-0 right-0 flex justify-center z-10 pointer-events-none"
+                style={{ transform: `translateY(${pull - 40}px)`, opacity: Math.min(pull / triggerDistance, 1) }}
+              >
+                <div className={`w-8 h-8 border-2 rounded-full ${refreshing ? 'border-indigo-500 border-t-transparent animate-spin' : 'border-zinc-600 border-t-indigo-500'}`}
+                  style={{ transform: refreshing ? 'none' : `rotate(${pull * 4}deg)` }}/>
               </div>
             )}
+          <div ref={homeScrollRef} className="h-full overflow-y-auto pb-6">
             {loading && !weather && (
               <div className="flex flex-col items-center justify-center h-48 gap-3 mt-8">
                 <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
@@ -248,6 +253,7 @@ export default function App() {
               </div>
             )}
           </div>
+          </>
         )}
 
         {/* HISTORY TAB */}
