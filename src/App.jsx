@@ -9,6 +9,7 @@ import { usePullToRefresh }     from './hooks/usePullToRefresh.js'
 import { useAppUpdate }        from './hooks/useAppUpdate.js'
 
 import { WeatherDisplay }      from './components/WeatherDisplay.jsx'
+import { SwipeableWeatherCards } from './components/SwipeableWeatherCards.jsx'
 import { OutfitCard }          from './components/OutfitCard.jsx'
 import { PackSomethingBanner } from './components/PackSomethingBanner.jsx'
 import { MorningPeakBanner }   from './components/MorningPeakBanner.jsx'
@@ -144,7 +145,7 @@ export default function App() {
       </header>
 
       {/* Main content area */}
-      <main className="flex-1 min-h-0 relative overflow-hidden">
+      <main className="flex-1 min-h-0 relative">
         {/* HOME TAB */}
         {tab === 'home' && (
           <>
@@ -158,7 +159,7 @@ export default function App() {
                   style={{ transform: refreshing ? 'none' : `rotate(${pull * 4}deg)` }}/>
               </div>
             )}
-          <div ref={homeScrollRef} className="h-full overflow-y-auto pb-6">
+          <div ref={homeScrollRef} className="absolute inset-0 overflow-y-auto pb-6">
             {loading && !weather && (
               <div className="flex flex-col items-center justify-center h-48 gap-3 mt-8">
                 <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
@@ -186,10 +187,11 @@ export default function App() {
                   onSave={saveCurrentLocation}
                   onRemove={removeSavedLocation}
                 />
-                <WeatherDisplay
+                <SwipeableWeatherCards
                   weather={weather}
                   location={location}
                   hourly={hourly}
+                  daily={daily}
                   unit={settings.tempUnit ?? '°C'}
                   onLocationTap={() => setShowLocationSearch(true)}
                 />

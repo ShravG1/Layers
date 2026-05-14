@@ -19,11 +19,11 @@ function HourlyBar({ hour, feelsLike, actual, rain, isCurrent, min, max }) {
   )
 }
 
-export function DayBreakdown({ hourly, weather, unit = '°C', onClose }) {
+export function DayBreakdown({ hourly, weather, unit = '°C', date, onClose }) {
   if (!hourly?.time) return null
 
-  const today = new Date().toISOString().slice(0, 10)
-  const nowHour = new Date().getHours()
+  const today = date ?? new Date().toISOString().slice(0, 10)
+  const nowHour = date ? -1 : new Date().getHours()
 
   const hours = hourly.time
     .map((t, i) => {
@@ -75,7 +75,7 @@ export function DayBreakdown({ hourly, weather, unit = '°C', onClose }) {
 
         <div className="px-5">
           <div className="flex items-baseline justify-between mb-1">
-            <h3 className="text-white font-bold text-lg">Today's breakdown</h3>
+            <h3 className="text-white font-bold text-lg">{date ? "Tomorrow's breakdown" : "Today's breakdown"}</h3>
             <button onClick={onClose} className="text-zinc-500 text-2xl leading-none">×</button>
           </div>
           <p className="text-zinc-500 text-xs mb-5">Tap the temp on the home screen to update.</p>

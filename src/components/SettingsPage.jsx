@@ -19,7 +19,7 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
   const [settings, setSettings] = useState(() => ({
     eveningCheckHour: 19,
     eveningTempDrop: 4,
-    notifTime: '07:30',
+    notifTime: '06:00',
     dressForDayEnabled: true,
     uvAlertsEnabled: true,
     windAdvisoryEnabled: true,
@@ -28,6 +28,9 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
     intradayDropEnabled: true,
     tomorrowPreviewEnabled: true,
     weeklyForecastEnabled: true,
+    tempChangeAlertEnabled: true,
+    tempChangeThreshold: 5,
+    packAdvisoryInMorningNotif: true,
     ...loadSettings(),
   }))
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -149,6 +152,25 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
             className="bg-zinc-800 text-white rounded-lg px-3 py-1.5 text-sm"
           />
         </Row>
+        <Row label="Pack advisory in morning alert">
+          <Toggle value={settings.packAdvisoryInMorningNotif} onChange={v => update('packAdvisoryInMorningNotif', v)} />
+        </Row>
+        <Row label="Temp change alert">
+          <Toggle value={settings.tempChangeAlertEnabled} onChange={v => update('tempChangeAlertEnabled', v)} />
+        </Row>
+        {settings.tempChangeAlertEnabled && (
+          <Row label="Alert when drop exceeds">
+            <select
+              value={settings.tempChangeThreshold}
+              onChange={e => update('tempChangeThreshold', Number(e.target.value))}
+              className="bg-zinc-800 text-white rounded-lg px-3 py-1.5 text-sm"
+            >
+              {[3,4,5,6,7,8,10].map(v => (
+                <option key={v} value={v}>{v}°C</option>
+              ))}
+            </select>
+          </Row>
+        )}
         <Row label="Permission">
           <span className={`text-xs px-2 py-1 rounded-full ${
             permission === 'granted' ? 'bg-green-900/50 text-green-300' :
