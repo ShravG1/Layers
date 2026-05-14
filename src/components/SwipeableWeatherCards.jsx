@@ -10,36 +10,29 @@ function getTomorrowData(hourly, daily) {
   tomorrow.setDate(tomorrow.getDate() + 1)
   const prefix = tomorrow.toISOString().slice(0, 10)
 
-  // find tomorrow's index in daily
   let dailyIdx = -1
-  if (daily?.time) {
-    dailyIdx = daily.time.findIndex(t => t === prefix)
-  }
+  if (daily?.time) dailyIdx = daily.time.findIndex(t => t === prefix)
 
-  // Representative midday feel from hourly
   const midday = [12, 13, 11, 14, 10].reduce((found, h) => {
     if (found) return found
     const target = `${prefix}T${String(h).padStart(2, '0')}:`
     const idx = hourly.time.findIndex(t => t.startsWith(target))
-    if (idx >= 0) return { idx, h }
-    return null
+    return idx >= 0 ? { idx } : null
   }, null)
 
   if (!midday && dailyIdx < 0) return null
 
-  const hi = dailyIdx >= 0 ? daily.apparent_temperature_max?.[dailyIdx] : null
-  const lo = dailyIdx >= 0 ? daily.apparent_temperature_min?.[dailyIdx] : null
-  const code = dailyIdx >= 0 ? (daily.weathercode ?? daily.weather_code)?.[dailyIdx] : null
-  const rainMax = dailyIdx >= 0 ? daily.precipitation_probability_max?.[dailyIdx] : null
-
+  const hi     = dailyIdx >= 0 ? daily.apparent_temperature_max?.[dailyIdx] : null
+  const lo     = dailyIdx >= 0 ? daily.apparent_temperature_min?.[dailyIdx] : null
+  const code   = dailyIdx >= 0 ? (daily.weathercode ?? daily.weather_code)?.[dailyIdx] : null
+  const rainMax= dailyIdx >= 0 ? daily.precipitation_probability_max?.[dailyIdx] : null
   const middayFeels = midday ? hourly.apparent_temperature?.[midday.idx] : null
-  const middayWind = midday ? hourly.windspeed_10m?.[midday.idx] : null
-  const middayRain = midday ? hourly.precipitation_probability?.[midday.idx] : null
+  const middayWind  = midday ? hourly.windspeed_10m?.[midday.idx] : null
+  const middayRain  = midday ? hourly.precipitation_probability?.[midday.idx] : null
 
   return {
     feelsLike: middayFeels ?? hi,
-    hi,
-    lo,
+    hi, lo,
     code: code ?? (midday ? hourly.weathercode?.[midday.idx] : null),
     rain: rainMax ?? middayRain ?? 0,
     wind: middayWind ?? 0,
@@ -50,20 +43,20 @@ function getTomorrowData(hourly, daily) {
 function TomorrowCard({ hourly, daily, unit, onTap }) {
   const data = getTomorrowData(hourly, daily)
   if (!data) return (
-    <div className="mx-4 mt-3 rounded-2xl glass-card p-5 flex items-center justify-center min-h-[160px]">
+    <div className="mx-4 mt-3 rounded-2xl glass-card p-5 flex items-center justify-center h-40">
       <p className="text-zinc-600 text-sm">Tomorrow's data not available</p>
     </div>
   )
 
-  const sym = tempSymbol(unit)
+  const sym      = tempSymbol(unit)
   const { label, condition } = wmoLabel(data.code ?? 0)
-  const windMph = Math.round(kmhToMph(data.wind))
-  const feelsLike = displayTempNum(data.feelsLike, unit)
-  const hi = displayTempNum(data.hi, unit)
-  const lo = displayTempNum(data.lo, unit)
+  const windMph  = Math.round(kmhToMph(data.wind))
+  const feelsLike= displayTempNum(data.feelsLike, unit)
+  const hi       = displayTempNum(data.hi, unit)
+  const lo       = displayTempNum(data.lo, unit)
 
   return (
-    <div className="mx-4 mt-3 rounded-2xl glass-card p-5 animate-fade-in">
+    <div className="animate-fade-in mx-4 mt-3 rounded-2xl glass-card p-5">
       <p className="text-zinc-500 text-xs font-medium uppercase tracking-widest mb-3">Tomorrow</p>
       <div className="flex items-start justify-between">
         <button onClick={onTap} className="text-left active:opacity-70 transition-opacity">
@@ -72,9 +65,7 @@ function TomorrowCard({ hourly, daily, unit, onTap }) {
           </div>
           <div className="text-zinc-400 text-sm mt-1.5">{label}</div>
           {hi != null && lo != null && (
-            <div className="text-zinc-600 text-xs mt-1">
-              {lo}{sym} – {hi}{sym}
-            </div>
+            <div className="text-zinc-600 text-xs mt-1">{lo}{sym} – {hi}{sym}</div>
           )}
           <p className="text-indigo-500 text-[10px] mt-2">Tap for tomorrow's breakdown →</p>
         </button>
@@ -98,77 +89,45 @@ function TomorrowCard({ hourly, daily, unit, onTap }) {
 export function SwipeableWeatherCards({ weather, location, hourly, daily, unit, onLocationTap }) {
   const [page, setPage] = useState(0)
   const [showTomorrowBreakdown, setShowTomorrowBreakdown] = useState(false)
-  const [dragX, setDragX] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
   const startX = useRef(null)
-  const containerRef = useRef(null)
   const THRESHOLD = 50
 
-  const onTouchStart = (e) => {
-    startX.current = e.touches[0].clientX
-    setIsDragging(true)
-  }
+  const onTouchStart = (e) => { startX.current = e.touches[0].clientX }
 
-  const onTouchMove = (e) => {
+  const onTouchEnd = (e) => {
     if (startX.current == null) return
-    const dx = e.touches[0].clientX - startX.current
-    // Resist at edges
-    if ((page === 0 && dx > 0) || (page === 1 && dx < 0)) {
-      setDragX(dx * 0.15)
-    } else {
-      setDragX(dx)
-    }
-  }
-
-  const onTouchEnd = () => {
-    if (dragX < -THRESHOLD && page === 0) setPage(1)
-    else if (dragX > THRESHOLD && page === 1) setPage(0)
-    setDragX(0)
-    setIsDragging(false)
+    const dx = e.changedTouches[0].clientX - startX.current
     startX.current = null
+    if (dx < -THRESHOLD && page === 0) setPage(1)
+    else if (dx > THRESHOLD && page === 1) setPage(0)
   }
 
-  const containerW = containerRef.current?.offsetWidth ?? 0
-  const translatePct = containerW > 0
-    ? ((-page * containerW + dragX) / containerW) * 100
-    : -page * 100
+  const tomorrowDate = (() => {
+    const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10)
+  })()
 
   return (
     <div
-      ref={containerRef}
-      className="overflow-hidden"
       onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
-      onTouchCancel={onTouchEnd}
     >
-      <div
-        className="flex"
-        style={{
-          transform: `translateX(${translatePct}%)`,
-          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
-          willChange: 'transform',
-        }}
-      >
-        {/* Today */}
-        <div className="min-w-full">
-          <WeatherDisplay
-            weather={weather}
-            location={location}
-            hourly={hourly}
-            unit={unit}
-            onLocationTap={onLocationTap}
-          />
-        </div>
-        {/* Tomorrow */}
-        <div className="min-w-full">
-          <TomorrowCard
-            hourly={hourly}
-            daily={daily}
-            unit={unit}
-            onTap={() => setShowTomorrowBreakdown(true)}
-          />
-        </div>
+      {/* Pages: only the active one is in flow; the other is hidden with display:none */}
+      <div style={{ display: page === 0 ? 'block' : 'none' }}>
+        <WeatherDisplay
+          weather={weather}
+          location={location}
+          hourly={hourly}
+          unit={unit}
+          onLocationTap={onLocationTap}
+        />
+      </div>
+      <div style={{ display: page === 1 ? 'block' : 'none' }}>
+        <TomorrowCard
+          hourly={hourly}
+          daily={daily}
+          unit={unit}
+          onTap={() => setShowTomorrowBreakdown(true)}
+        />
       </div>
 
       {/* Page dots */}
@@ -189,7 +148,7 @@ export function SwipeableWeatherCards({ weather, location, hourly, daily, unit, 
           hourly={hourly}
           weather={weather}
           unit={unit}
-          date={(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })()}
+          date={tomorrowDate}
           onClose={() => setShowTomorrowBreakdown(false)}
         />
       )}
