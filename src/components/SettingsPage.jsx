@@ -43,7 +43,7 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
   }
 
   return (
-    <div className="overflow-y-auto h-full pb-24 px-4 pt-4">
+    <div className="overflow-y-auto h-full pb-6 px-4 pt-4">
       <h2 className="text-white font-semibold text-lg mb-5">Settings</h2>
 
       {/* Wardrobe */}

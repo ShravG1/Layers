@@ -58,7 +58,7 @@ export function HistoryPage() {
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-zinc-500 px-8 text-center gap-3 pt-20">
+      <div className="flex flex-col items-center justify-center h-full text-zinc-500 px-8 text-center gap-3">
         <span className="text-4xl">📋</span>
         <p className="text-sm">No outfit history yet. Come back after your first recommendation!</p>
       </div>
@@ -82,8 +82,9 @@ export function HistoryPage() {
   const dayEntries = selectedDay ? byDay[selectedDay] ?? [] : []
 
   return (
-    <div className="overflow-y-auto h-full pb-24 px-4 pt-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-full px-4 pt-4 pb-2">
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <h2 className="text-white font-semibold text-lg">Your History</h2>
         <div className="flex rounded-lg overflow-hidden border border-zinc-800">
           {['calendar', 'list'].map(v => (
@@ -96,23 +97,39 @@ export function HistoryPage() {
         </div>
       </div>
 
+      {view === 'list' && (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="flex flex-col gap-2 pb-2">
+            {history.map(e => (
+              <EntryCard key={e.id} entry={e}/>
+            ))}
+          </div>
+        </div>
+      )}
+
       {view === 'calendar' && (
-        <>
-          <div className="flex items-center justify-between mb-3">
-            <button onClick={goPrev} className="text-zinc-500 hover:text-white px-2 py-1">‹</button>
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* Month nav */}
+          <div className="flex items-center justify-between mb-2 flex-shrink-0">
+            <button onClick={goPrev} className="text-zinc-500 hover:text-white px-2 py-1 text-lg">‹</button>
             <p className="text-white text-sm font-medium">{monthLabel}</p>
-            <button onClick={goNext} className="text-zinc-500 hover:text-white px-2 py-1">›</button>
+            <button onClick={goNext} className="text-zinc-500 hover:text-white px-2 py-1 text-lg">›</button>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 mb-1">
+          {/* Day name headers */}
+          <div className="grid grid-cols-7 gap-1 flex-shrink-0 mb-1">
             {WEEKDAYS.map((w, i) => (
-              <div key={i} className="text-center text-[10px] text-zinc-600 py-1">{w}</div>
+              <div key={i} className="text-center text-[10px] text-zinc-600 py-0.5">{w}</div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1">
+          {/* Calendar grid — flex-1 so it fills remaining height */}
+          <div
+            className="grid grid-cols-7 gap-1 flex-1 min-h-0"
+            style={{ gridAutoRows: '1fr' }}
+          >
             {cells.map((c, i) => {
-              if (!c) return <div key={i} className="aspect-square"/>
+              if (!c) return <div key={i}/>
               const entries = byDay[c.key]
               const latest = entries?.[0]
               const fb = latest?.feedback
@@ -120,7 +137,7 @@ export function HistoryPage() {
                 <button
                   key={c.key}
                   onClick={() => entries && setSelectedDay(c.key)}
-                  className={`aspect-square rounded-lg text-[11px] flex flex-col items-center justify-center transition-all
+                  className={`rounded-lg text-[11px] flex flex-col items-center justify-center transition-all active:scale-95
                     ${entries
                       ? fb === 'cold' ? 'bg-blue-500/20 border border-blue-500/40 text-blue-200'
                       : fb === 'warm' ? 'bg-red-500/20 border border-red-500/40 text-red-200'
@@ -136,20 +153,13 @@ export function HistoryPage() {
             })}
           </div>
 
-          <div className="flex gap-3 mt-4 text-[10px] text-zinc-500 justify-center flex-wrap">
+          {/* Legend */}
+          <div className="flex gap-3 py-2 text-[10px] text-zinc-500 justify-center flex-wrap flex-shrink-0">
             <span><span className="inline-block w-2 h-2 rounded-sm bg-blue-500/40 mr-1"/>Cold</span>
             <span><span className="inline-block w-2 h-2 rounded-sm bg-green-500/40 mr-1"/>Just right</span>
             <span><span className="inline-block w-2 h-2 rounded-sm bg-red-500/40 mr-1"/>Warm</span>
             <span><span className="inline-block w-2 h-2 rounded-sm bg-zinc-700 mr-1"/>No rating</span>
           </div>
-        </>
-      )}
-
-      {view === 'list' && (
-        <div className="flex flex-col gap-2">
-          {history.map(e => (
-            <EntryCard key={e.id} entry={e}/>
-          ))}
         </div>
       )}
 
