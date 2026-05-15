@@ -44,13 +44,20 @@ export function useAppUpdate() {
   }, [])
 
   const applyUpdate = () => {
-    // Tell a waiting SW to take over immediately, then reload.
-    // With autoUpdate the SW already skipped waiting, so just reload.
+    // Reload as soon as the new SW takes control — prevents a race where
+    // the reload would otherwise be served by the old SW.
+    navigator.serviceWorker.addEventListener(
+      'controllerchange',
+      () => window.location.reload(),
+      { once: true }
+    )
     if (reg?.waiting) {
       reg.waiting.postMessage({ type: 'SKIP_WAITING' })
     } else {
       window.location.reload()
     }
+    // Safety net: hard-reload after 1.5s if controllerchange never fires
+    setTimeout(() => window.location.reload(), 1500)
   }
 
   return { needsReload, applyUpdate }

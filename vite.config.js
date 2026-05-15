@@ -32,6 +32,11 @@ export default defineConfig({
         // "no-response" error that kills the whole fetch rather than letting the
         // app's own error handling take over.
         navigateFallback: '/index.html',
+        // Make new SWs activate immediately and take over open clients —
+        // otherwise installed updates sit in 'waiting' state and the user
+        // keeps seeing stale code even after tapping the update banner.
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],
