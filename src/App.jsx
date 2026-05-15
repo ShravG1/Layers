@@ -145,7 +145,7 @@ export default function App() {
       </header>
 
       {/* Main content area */}
-      <main className="flex-1 min-h-0 relative">
+      <main className="flex-1 min-h-0 flex flex-col relative">
         {/* HOME TAB */}
         {tab === 'home' && (
           <>
@@ -159,7 +159,7 @@ export default function App() {
                   style={{ transform: refreshing ? 'none' : `rotate(${pull * 4}deg)` }}/>
               </div>
             )}
-          <div ref={homeScrollRef} className="absolute inset-0 overflow-y-auto pb-6">
+          <div ref={homeScrollRef} className="flex-1 min-h-0 overflow-y-auto pb-6">
             {loading && !weather && (
               <div className="flex flex-col items-center justify-center h-48 gap-3 mt-8">
                 <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
@@ -259,10 +259,15 @@ export default function App() {
         )}
 
         {/* HISTORY TAB */}
-        {tab === 'history' && <HistoryPage />}
+        {tab === 'history' && (
+          <div className="flex-1 min-h-0">
+            <HistoryPage />
+          </div>
+        )}
 
         {/* SETTINGS TAB */}
         {tab === 'settings' && (
+          <div className="flex-1 min-h-0">
           <SettingsPage
             onResetPrefs={resetPreferences}
             onResetOnboarding={resetOnboarding}
@@ -273,6 +278,7 @@ export default function App() {
             onRemoveCustom={removeCustomExtra}
             onShowReinstall={() => setShowReinstall(true)}
           />
+          </div>
         )}
       </main>
 
