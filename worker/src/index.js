@@ -57,6 +57,25 @@ async function handleHttp(request, env) {
     return json({ ok: true })
   }
 
+  // Load the user's data backup
+  if (url.pathname === '/sync' && request.method === 'GET') {
+    const k = url.searchParams.get('k')
+    if (!k) return json({ error: 'missing key' }, 400)
+    const raw = await env.SUBS.get(`backup:${k}`)
+    return json(raw ? JSON.parse(raw) : {})
+  }
+
+  // Save the user's data backup
+  // body: { k: personalKey, data: { wtw_*: "..." } }
+  if (url.pathname === '/sync' && request.method === 'POST') {
+    const body = await request.json()
+    if (!body?.k || typeof body.data !== 'object' || body.data === null) {
+      return json({ error: 'bad body' }, 400)
+    }
+    await env.SUBS.put(`backup:${body.k}`, JSON.stringify(body.data))
+    return json({ ok: true })
+  }
+
   // Test push to a single subscription
   if (url.pathname === '/test' && request.method === 'POST') {
     const body = await request.json()
