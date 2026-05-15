@@ -34,7 +34,53 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
     ...loadSettings(),
   }))
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [importStatus, setImportStatus] = useState(null)
   const { permission, requestPermission, notifSettings } = usePushNotifications()
+
+  const DATA_KEYS = [
+    'wtw_settings', 'wtw_history', 'wtw_preferences',
+    'wtw_saved_locations', 'wtw_notifications',
+    'wtw_installHintDismissed', 'wtw_lastMoodPromptDate', 'wtw_pwaLaunched',
+  ]
+
+  const handleExport = () => {
+    const backup = {}
+    for (const key of DATA_KEYS) {
+      const val = localStorage.getItem(key)
+      if (val !== null) backup[key] = val
+    }
+    const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `layers-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const backup = JSON.parse(ev.target.result)
+        let count = 0
+        for (const key of DATA_KEYS) {
+          if (Object.prototype.hasOwnProperty.call(backup, key)) {
+            localStorage.setItem(key, backup[key])
+            count++
+          }
+        }
+        setImportStatus({ ok: true, msg: `Restored ${count} data items. Reload to apply.` })
+        setTimeout(() => window.location.reload(), 1500)
+      } catch {
+        setImportStatus({ ok: false, msg: 'Invalid backup file.' })
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
 
   const update = (key, val) => {
     const next = { ...settings, [key]: val }
@@ -190,8 +236,32 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
         )}
       </Section>
 
-      {/* Danger zone */}
+      {/* Data backup */}
       <Section title="Data">
+        <div className="px-4 py-3">
+          <p className="text-zinc-400 text-xs mb-3">Back up your wardrobe, history, and settings so you can restore them after reinstalling the app.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-500 transition-colors"
+            >
+              Export backup
+            </button>
+            <label className="flex-1 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-medium hover:bg-zinc-700 transition-colors text-center cursor-pointer">
+              Restore backup
+              <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+            </label>
+          </div>
+          {importStatus && (
+            <p className={`text-xs mt-2 text-center ${importStatus.ok ? 'text-green-400' : 'text-red-400'}`}>
+              {importStatus.msg}
+            </p>
+          )}
+        </div>
+      </Section>
+
+      {/* Danger zone */}
+      <Section title="Danger Zone">
         <button
           onClick={() => setShowResetConfirm(true)}
           className="w-full py-2.5 bg-zinc-800 text-zinc-300 rounded-xl text-sm hover:bg-zinc-700 transition-colors mb-2"
