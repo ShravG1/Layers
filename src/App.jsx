@@ -132,7 +132,9 @@ export default function App() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 flex flex-col bg-[#0a0a0a]" style={{ top: 'env(safe-area-inset-top)' }}>
+    <div className="fixed inset-0 flex flex-col bg-[#0a0a0a]">
+      {/* Safe-area top spacer — pushes content below Dynamic Island without shrinking the container */}
+      <div style={{ height: 'env(safe-area-inset-top)', flexShrink: 0 }} />
       {/* Header */}
       <header className="px-4 pt-3 pb-3 flex items-center justify-between border-b border-zinc-900/50 flex-shrink-0">
         <div className="flex items-center gap-2">
