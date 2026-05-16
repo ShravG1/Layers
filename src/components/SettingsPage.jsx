@@ -14,7 +14,7 @@ export function saveSettings(settings) {
   localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(settings))
 }
 
-export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange, customExtras = [], onAddCustom, onRemoveCustom, onShowReinstall }) {
+export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange, customExtras = [], onAddCustom, onRemoveCustom, onShowReinstall, cloudBackup }) {
   const [wardrobeOpen, setWardrobeOpen] = useState(false)
   const [settings, setSettings] = useState(() => ({
     eveningCheckHour: 19,
@@ -168,6 +168,13 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
         )}
       </Section>
 
+      {/* Backup & Sync */}
+      {cloudBackup?.configured && (
+        <Section title="Backup & Sync">
+          <BackupPanel cloudBackup={cloudBackup} />
+        </Section>
+      )}
+
       {/* Danger zone */}
       <Section title="Data">
         <button
@@ -200,6 +207,116 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
               <button onClick={() => { onResetPrefs(); setShowResetConfirm(false) }} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium">Reset</button>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function relTime(ts) {
+  if (!ts) return 'never'
+  const s = Math.max(0, Math.round((Date.now() - ts) / 1000))
+  if (s < 60) return 'just now'
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`
+  return `${Math.floor(s / 86400)}d ago`
+}
+
+function BackupPanel({ cloudBackup }) {
+  const [copied, setCopied] = useState(false)
+  const [restoreOpen, setRestoreOpen] = useState(false)
+  const [input, setInput] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState(null)
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(cloudBackup.code)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch { /* clipboard blocked — code is still visible */ }
+  }
+
+  const doRestore = async () => {
+    setBusy(true)
+    setMsg(null)
+    const res = await cloudBackup.restore(input)
+    if (res.ok) {
+      setMsg({ ok: true, text: 'Restored. Reloading…' })
+      setTimeout(() => window.location.reload(), 900)
+    } else {
+      setMsg({ ok: false, text: res.error })
+      setBusy(false)
+    }
+  }
+
+  const statusText =
+    cloudBackup.status === 'saving' ? 'Backing up…' :
+    cloudBackup.status === 'error'  ? 'Last backup failed' :
+    `Last backed up ${relTime(cloudBackup.lastBackup)}`
+
+  return (
+    <div className="px-4 py-4">
+      <p className="text-zinc-400 text-xs leading-relaxed mb-3">
+        Your data backs up automatically. Save this code — after a reinstall or on a
+        new phone, enter it to restore everything.
+      </p>
+
+      <div className="flex items-center gap-2 mb-3">
+        <code className="flex-1 bg-zinc-800 text-white text-lg font-mono tracking-widest text-center py-2.5 rounded-xl select-all">
+          {cloudBackup.code}
+        </code>
+        <button
+          onClick={copy}
+          className="px-3 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl text-xs hover:bg-zinc-700 transition-colors"
+        >
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <span className={`text-xs ${cloudBackup.status === 'error' ? 'text-red-400' : 'text-zinc-500'}`}>
+          {statusText}
+        </span>
+        <button
+          onClick={cloudBackup.backupNow}
+          disabled={cloudBackup.status === 'saving'}
+          className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors disabled:opacity-50"
+        >
+          Back up now
+        </button>
+      </div>
+
+      <button
+        onClick={() => setRestoreOpen(o => !o)}
+        className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+      >
+        {restoreOpen ? '▲ Hide restore' : '▼ Restore from a code'}
+      </button>
+
+      {restoreOpen && (
+        <div className="mt-3">
+          <p className="text-amber-400/80 text-[11px] leading-relaxed mb-2">
+            Restoring replaces the data on this device with the backup.
+          </p>
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="XXXX-XXXX"
+            autoCapitalize="characters"
+            spellCheck={false}
+            className="w-full bg-zinc-800 text-white font-mono tracking-widest text-center rounded-xl px-3 py-2.5 text-sm mb-2 placeholder:text-zinc-600"
+          />
+          {msg && (
+            <p className={`text-xs mb-2 ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</p>
+          )}
+          <button
+            onClick={doRestore}
+            disabled={busy || !input.trim()}
+            className="w-full py-2.5 bg-zinc-100 text-zinc-900 rounded-xl text-sm font-medium hover:bg-white transition-colors disabled:opacity-40"
+          >
+            {busy ? 'Restoring…' : 'Restore this code'}
+          </button>
         </div>
       )}
     </div>

@@ -7,6 +7,7 @@ import { useMorningPeak }       from './hooks/useMorningPeak.js'
 import { usePushNotifications } from './hooks/usePushNotifications.js'
 import { usePullToRefresh }     from './hooks/usePullToRefresh.js'
 import { useAppUpdate }        from './hooks/useAppUpdate.js'
+import { useCloudBackup }      from './hooks/useCloudBackup.js'
 
 import { WeatherDisplay }      from './components/WeatherDisplay.jsx'
 import { OutfitCard }          from './components/OutfitCard.jsx'
@@ -58,6 +59,8 @@ export default function App() {
   } = usePreferences()
 
   const { permission, notifSettings, requestPermission } = usePushNotifications()
+
+  const cloudBackup = useCloudBackup()
 
   const outfitData = useOutfitEngine({ weather, hourly, preferences: prefs, settings })
 
@@ -264,6 +267,7 @@ export default function App() {
             onAddCustom={addCustomExtra}
             onRemoveCustom={removeCustomExtra}
             onShowReinstall={() => setShowReinstall(true)}
+            cloudBackup={cloudBackup}
           />
         )}
       </main>

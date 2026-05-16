@@ -68,7 +68,40 @@ async function handleHttp(request, env) {
     return json({ status: res.status })
   }
 
+  // Back up the app's local data under a user-held code.
+  // body: { code, data }  data = { "wtw_history": "...", ... }
+  if (url.pathname === '/sync/backup' && request.method === 'POST') {
+    const body = await request.json().catch(() => null)
+    const code = normalizeCode(body?.code)
+    if (!code) return json({ error: 'bad code' }, 400)
+    if (body?.data == null || typeof body.data !== 'object') {
+      return json({ error: 'bad data' }, 400)
+    }
+    const updatedAt = Date.now()
+    const serialized = JSON.stringify({ data: body.data, updatedAt })
+    if (serialized.length > 2_000_000) return json({ error: 'too large' }, 413)
+    await env.SUBS.put(`bk:${code}`, serialized)
+    return json({ ok: true, updatedAt })
+  }
+
+  // Restore previously backed-up data for a code.
+  if (url.pathname === '/sync/restore' && request.method === 'GET') {
+    const code = normalizeCode(url.searchParams.get('code'))
+    if (!code) return json({ error: 'bad code' }, 400)
+    const raw = await env.SUBS.get(`bk:${code}`)
+    if (!raw) return json({ error: 'not found' }, 404)
+    return json(JSON.parse(raw))
+  }
+
   return new Response('Layers push service', { headers: cors })
+}
+
+// Backup codes: 8 chars from an unambiguous alphabet, case-insensitive,
+// dashes/spaces ignored. Returns null if it doesn't match that shape.
+function normalizeCode(input) {
+  if (typeof input !== 'string') return null
+  const c = input.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  return /^[A-Z0-9]{8}$/.test(c) ? c : null
 }
 
 async function hashEndpoint(endpoint) {

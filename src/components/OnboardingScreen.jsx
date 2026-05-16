@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { WardrobeSelect } from './WardrobeSelect.jsx'
 import { DEFAULT_WARDROBE } from '../utils/wardrobe.js'
+import { backupConfigured, restoreFromCode } from '../hooks/useCloudBackup.js'
 
 const PROFILES = [
   { profile: 'warm',    emoji: '🔥', label: 'Run warm',   desc: "Always hot — prefer fewer layers" },
@@ -12,6 +13,7 @@ export function OnboardingScreen({ onComplete }) {
   const [step, setStep] = useState(0)
   const [profile, setProfile] = useState(null)
   const [wardrobe, setWardrobe] = useState([])  // start empty — user picks what they own
+  const [showRestore, setShowRestore] = useState(false)
 
   // Step 0: Welcome + thermal profile
   if (step === 0) {
@@ -46,7 +48,18 @@ export function OnboardingScreen({ onComplete }) {
               </button>
             ))}
           </div>
+
+          {backupConfigured && (
+            <button
+              onClick={() => setShowRestore(true)}
+              className="mt-5 text-center text-zinc-500 text-xs hover:text-zinc-300 transition-colors"
+            >
+              Reinstalling? Restore from a backup code
+            </button>
+          )}
         </div>
+
+        {showRestore && <RestoreModal onClose={() => setShowRestore(false)} />}
       </div>
     )
   }
@@ -77,6 +90,59 @@ export function OnboardingScreen({ onComplete }) {
         >
           Continue
         </button>
+      </div>
+    </div>
+  )
+}
+
+function RestoreModal({ onClose }) {
+  const [input, setInput] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  const submit = async () => {
+    setBusy(true)
+    setError(null)
+    const res = await restoreFromCode(input)
+    if (res.ok) {
+      window.location.reload()
+    } else {
+      setError(res.error)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 px-6">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-xs w-full">
+        <p className="text-white font-semibold mb-1">Restore your data</p>
+        <p className="text-zinc-500 text-xs mb-4">
+          Enter the backup code from your old install.
+        </p>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="XXXX-XXXX"
+          autoCapitalize="characters"
+          spellCheck={false}
+          className="w-full bg-zinc-800 text-white font-mono tracking-widest text-center rounded-xl px-3 py-2.5 text-sm mb-2 placeholder:text-zinc-600"
+        />
+        {error && <p className="text-red-400 text-xs mb-2">{error}</p>}
+        <div className="flex gap-3 mt-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 bg-zinc-800 text-zinc-400 rounded-xl text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={submit}
+            disabled={busy || !input.trim()}
+            className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium disabled:opacity-40"
+          >
+            {busy ? 'Restoring…' : 'Restore'}
+          </button>
+        </div>
       </div>
     </div>
   )
