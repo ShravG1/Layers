@@ -3,8 +3,7 @@
 @layer base {
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body, #root {
-    height: 100dvh;
-    min-height: 100dvh;
+    height: 100%;
     margin: 0;
     padding: 0;
     background: #0a0a0a;
@@ -14,11 +13,10 @@
     overscroll-behavior: none;
   }
   body {
-    /* Safe-area aware: avoids Dynamic Island / home indicator overlap */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    /* Lock the page; only the app's <main> scrolls. Safe-area insets are
+       handled by the header and nav so the nav background can paint all
+       the way to the physical screen edge. */
+    overflow: hidden;
   }
   button { font-family: inherit; }
 }

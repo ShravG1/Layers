@@ -134,9 +134,12 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-full max-w-[420px] mx-auto relative bg-[#0a0a0a]">
+    <div className="flex flex-col h-[100dvh] max-w-[420px] mx-auto relative bg-[#0a0a0a]">
       {/* Header */}
-      <header className="px-4 pt-3 pb-3 flex items-center justify-between border-b border-zinc-900/50 flex-shrink-0">
+      <header
+        className="px-4 pb-3 flex items-center justify-between border-b border-zinc-900/50 flex-shrink-0"
+        style={{ paddingTop: 'max(env(safe-area-inset-top), 0.75rem)' }}
+      >
         <div className="flex items-center gap-2">
           <LogoMark size={28}/>
           <h1 className="text-white font-bold text-lg tracking-tight">Layers</h1>
@@ -272,8 +275,12 @@ export default function App() {
         )}
       </main>
 
-      {/* Bottom tab bar */}
-      <nav className="flex border-t border-zinc-800/60 bg-zinc-950 flex-shrink-0">
+      {/* Bottom tab bar — background paints to the physical screen edge,
+          buttons stay above the home indicator via safe-area padding. */}
+      <nav
+        className="flex border-t border-zinc-800/60 bg-zinc-950 flex-shrink-0"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         {TABS.map(t => (
           <button
             key={t}
