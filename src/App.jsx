@@ -134,7 +134,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] max-w-[420px] mx-auto relative bg-[#0a0a0a]">
+    <div className="fixed inset-0 flex flex-col max-w-[420px] mx-auto bg-[#0a0a0a]">
       {/* Header */}
       <header
         className="px-4 pb-3 flex items-center justify-between border-b border-zinc-900/50 flex-shrink-0"
