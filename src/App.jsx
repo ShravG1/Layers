@@ -134,7 +134,7 @@ export default function App() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col max-w-[420px] mx-auto bg-[#0a0a0a]">
+    <div className="relative flex flex-col h-full max-w-[420px] mx-auto bg-[#0a0a0a]">
       <DebugBar />
       {/* Header */}
       <header
@@ -345,10 +345,12 @@ function DebugBar() {
       const standalone =
         window.matchMedia?.('(display-mode: standalone)').matches ||
         window.navigator.standalone === true
+      const navEl = document.querySelector('nav')
+      const navBottom = navEl ? Math.round(navEl.getBoundingClientRect().bottom) : '?'
       setInfo(
-        `inner:${window.innerHeight} vv:${Math.round(window.visualViewport?.height || 0)} ` +
+        `inner:${window.innerHeight} screen:${window.screen?.height} ` +
         `doc:${document.documentElement.clientHeight} ` +
-        `appH:${getComputedStyle(document.documentElement).getPropertyValue('--app-h').trim()} ` +
+        `navBottom:${navBottom} scrollH:${document.documentElement.scrollHeight} ` +
         `safeBottom:${sab} standalone:${standalone}`
       )
     }
