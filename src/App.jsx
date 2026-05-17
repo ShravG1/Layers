@@ -134,7 +134,16 @@ export default function App() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col max-w-[420px] mx-auto bg-[#0a0a0a] overflow-hidden">
+    <div
+      className="flex flex-col max-w-[420px] mx-auto bg-[#0a0a0a] overflow-hidden"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 'calc(0px - env(safe-area-inset-bottom))',
+      }}
+    >
       <DebugBar />
       {/* Header */}
       <header
