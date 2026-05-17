@@ -134,7 +134,7 @@ export default function App() {
   }
 
   return (
-    <div className="relative flex flex-col h-full max-w-[420px] mx-auto bg-[#0a0a0a]">
+    <div className="fixed inset-0 flex flex-col max-w-[420px] mx-auto bg-[#0a0a0a] overflow-hidden">
       <DebugBar />
       {/* Header */}
       <header
