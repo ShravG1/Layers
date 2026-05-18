@@ -169,11 +169,9 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
       </Section>
 
       {/* Backup & Sync */}
-      {cloudBackup?.configured && (
-        <Section title="Backup & Sync">
-          <BackupPanel cloudBackup={cloudBackup} />
-        </Section>
-      )}
+      <Section title="Backup & Sync">
+        <BackupPanel cloudBackup={cloudBackup} />
+      </Section>
 
       {/* Danger zone */}
       <Section title="Data">
@@ -228,6 +226,19 @@ function BackupPanel({ cloudBackup }) {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null)
+
+  if (!cloudBackup?.configured) {
+    return (
+      <div className="px-4 py-4">
+        <p className="text-zinc-400 text-xs leading-relaxed mb-2">
+          Automatic backup isn't set up yet. To enable it, add <code className="text-zinc-300">VITE_PUSH_WORKER_URL</code> to your Cloudflare Pages environment variables (your <span className="text-zinc-300">layers-push</span> worker URL), then redeploy.
+        </p>
+        <p className="text-zinc-600 text-xs">
+          Find the worker URL in Cloudflare dashboard → Workers &amp; Pages → layers-push.
+        </p>
+      </div>
+    )
+  }
 
   const copy = async () => {
     try {

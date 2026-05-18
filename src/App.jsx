@@ -279,7 +279,7 @@ export default function App() {
       {/* Bottom tab bar — background paints to the physical screen edge,
           buttons stay above the home indicator via safe-area padding. */}
       <nav
-        className="flex border-t border-zinc-800/60 bg-zinc-950 flex-shrink-0"
+        className="flex border-t border-zinc-800/60 bg-[#0a0a0a] flex-shrink-0"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {TABS.map(t => (
