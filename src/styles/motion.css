@@ -1,0 +1,138 @@
+/* ============================================================
+   Reflection — motion system
+   Hand-feel: weight, spring, momentum. No pop-ins.
+   Custom easings only — never bare `ease`/`ease-in`/`ease-out`.
+   ============================================================ */
+
+/* ---------- Keyframes ---------- */
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+
+/* Counter-phase glow that sits behind a breathing element. */
+@keyframes breathe-glow {
+  0%, 100% { opacity: 0.25; transform: scale(1.05); }
+  50%      { opacity: 0.55; transform: scale(1.12); }
+}
+
+@keyframes ember-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(232,137,74,0); }
+  50%      { box-shadow: 0 0 24px rgba(232,137,74,0.45); }
+}
+
+@keyframes spark {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ink-bleed {
+  from {
+    -webkit-mask-image: radial-gradient(circle at 0 50%, black 0%, transparent 0%);
+            mask-image: radial-gradient(circle at 0 50%, black 0%, transparent 0%);
+  }
+  to {
+    -webkit-mask-image: radial-gradient(circle at 0 50%, black 140%, transparent 140%);
+            mask-image: radial-gradient(circle at 0 50%, black 140%, transparent 140%);
+  }
+}
+
+@keyframes line-draw {
+  from { stroke-dashoffset: var(--len, 1000); }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes lift-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lift-in-soft {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+@keyframes ink-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Animatable underline on labels */
+@keyframes draw-line {
+  from { background-size: 0% 1px; }
+  to   { background-size: 100% 1px; }
+}
+
+/* ---------- Utility classes ---------- */
+
+.anim-breathe       { animation: breathe 5s var(--ease-in-out-warm) infinite; }
+.anim-breathe-glow  { animation: breathe-glow 5s var(--ease-in-out-warm) infinite; animation-delay: 2.5s; }
+.anim-ember         { animation: ember-pulse 3.5s var(--ease-in-out-warm) infinite; }
+.anim-spark         { animation: spark 700ms var(--ease-spring) both; }
+.anim-ink-bleed     { animation: ink-bleed 400ms var(--ease-out-soft) both; }
+.anim-lift          { animation: lift-in 480ms var(--ease-out-soft) both; }
+.anim-lift-soft     { animation: lift-in-soft 360ms var(--ease-out-soft) both; }
+.anim-glow-rise     { animation: glow-rise 600ms var(--ease-out-soft) both; }
+.anim-ink-fade      { animation: ink-fade 500ms var(--ease-out-soft) both; }
+.anim-line-draw     { stroke-dasharray: var(--len, 1000); animation: line-draw 900ms var(--ease-out-soft) forwards; }
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* Press feedback — used on every interactive surface */
+.press {
+  transition: transform 280ms var(--ease-out-soft),
+              box-shadow 320ms var(--ease-out-soft),
+              background-color 320ms var(--ease-out-soft);
+}
+.press:active { transform: scale(0.98); }
+
+/* Reduced motion — kill the breath, keep opacity transitions only */
+@media (prefers-reduced-motion: reduce) {
+  .anim-breathe,
+  .anim-breathe-glow,
+  .anim-ember,
+  .anim-spark,
+  .anim-ink-bleed,
+  .anim-lift,
+  .anim-lift-soft,
+  .anim-glow-rise,
+  .anim-line-draw { animation: none !important; }
+
+  .anim-ink-fade { animation-duration: 200ms; }
+
+  *, *::before, *::after {
+    transition-duration: 0.1s !important;
+    animation-duration: 0.1s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* View Transitions — match the ink-fade language */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: var(--ease-out-soft);
+}
+::view-transition-old(root) {
+  animation-name: fade-out-soft;
+}
+::view-transition-new(root) {
+  animation-name: fade-in-soft;
+}
+@keyframes fade-out-soft { to { opacity: 0; } }
+@keyframes fade-in-soft {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,169 @@
+/* ============================================================
+   Reflection — design tokens
+   After-dark editorial. Nocturnal palette, candlelight text,
+   ember + moon as duelling accents.
+   ============================================================ */
+
+:root {
+  /* Base — dusk */
+  --ink-900: #0E1117;
+  --ink-800: #161B23;
+  --ink-700: #1F2731;
+  --ink-600: #2B3340;
+
+  /* Paper — text + warmth */
+  --paper-50:  #F5EDDF;
+  --paper-200: #DFD3BE;
+  --paper-400: #A89A82;
+
+  /* Ember — primary accent */
+  --ember-300: #F4B98A;
+  --ember-500: #E8894A;
+  --ember-700: #B45F2A;
+
+  /* Moon — secondary accent */
+  --moon-300: #B8C7DE;
+  --moon-500: #7B91B0;
+  --moon-700: #4D6280;
+
+  /* Sage — mood-only, restrained */
+  --sage-500: #6B8268;
+
+  /* Type */
+  --font-display: 'Fraunces Variable', 'Times New Roman', serif;
+  --font-body:    'Inter Variable', system-ui, -apple-system, sans-serif;
+
+  /* Radii */
+  --r-sm: 10px;
+  --r-md: 18px;
+  --r-lg: 28px;
+  --r-pill: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Shadows — every elevation has at least two layers */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4),
+               0 0 0 1px rgba(255,255,255,0.03) inset;
+  --shadow-md: 0 2px 4px rgba(0,0,0,0.4),
+               0 8px 24px rgba(0,0,0,0.35),
+               0 0 0 1px rgba(255,255,255,0.04) inset;
+  --shadow-lg: 0 4px 8px rgba(0,0,0,0.45),
+               0 24px 48px rgba(0,0,0,0.45),
+               0 0 0 1px rgba(255,255,255,0.05) inset;
+  --shadow-xl: 0 6px 12px rgba(0,0,0,0.5),
+               0 36px 72px rgba(0,0,0,0.55),
+               0 0 0 1px rgba(255,255,255,0.06) inset;
+
+  --glow-ember: 0 0 48px rgba(232,137,74,0.18);
+  --glow-moon:  0 0 48px rgba(123,145,176,0.16);
+
+  /* Easing curves */
+  --ease-out-soft:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-warm: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ---------- Type ramp ---------- */
+
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 96, 'SOFT' 80;
+}
+.display-lg {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  font-variation-settings: 'opsz' 72, 'SOFT' 60;
+}
+.display-md {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'opsz' 48, 'SOFT' 40;
+}
+.display-sm {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  font-variation-settings: 'opsz' 32, 'SOFT' 30;
+}
+.display-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'opsz' 24, 'SOFT' 50;
+}
+
+.body-lg { font: 400 17px/1.5 var(--font-body); }
+.body-md { font: 400 15px/1.5 var(--font-body); }
+.body-sm { font: 400 13px/1.45 var(--font-body); }
+
+.label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-400);
+}
+
+/* ---------- Surfaces ---------- */
+
+.surface-card {
+  background: var(--ink-800);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+}
+.surface-card-raised {
+  background: var(--ink-700);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+}
+.surface-sunken {
+  background: var(--ink-900);
+  border-radius: var(--r-md);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset,
+              0 2px 6px rgba(0,0,0,0.4) inset;
+}
+
+/* Left edge accent rail */
+.rail-ember { box-shadow: var(--shadow-md), inset 4px 0 0 var(--ember-500); }
+.rail-moon  { box-shadow: var(--shadow-md), inset 4px 0 0 var(--moon-500); }
+
+/* ---------- Folded-note treatment (backfill banner) ---------- */
+
+.folded-note {
+  background: var(--paper-50);
+  color: var(--ink-900);
+  border-radius: var(--r-md);
+  transform: rotate(-0.5deg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3),
+              0 16px 32px rgba(0,0,0,0.4);
+  position: relative;
+}
+.folded-note::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 12px; bottom: 12px;
+  width: 3px;
+  background: var(--ember-500);
+  border-radius: 0 2px 2px 0;
+}

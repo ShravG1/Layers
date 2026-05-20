@@ -17,7 +17,6 @@ export default function WeeklySummary({ entries, apiKey, kind = 'weekly', haptic
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Generate AI-narrative on mount (without weekly reflection — that comes from the user themselves)
   useEffect(() => {
     let active = true;
     (async () => {
@@ -31,53 +30,57 @@ export default function WeeklySummary({ entries, apiKey, kind = 'weekly', haptic
   const themes = useMemo(() => recurringThemes(present), [present]);
 
   const moodPoints = period.map((e, i) => ({
-    value: e?.mood ?? null,
-    label: shortLabel(keys[i], days),
+    value: e?.mood ?? null, label: shortLabel(keys[i], days),
   }));
   const stressPoints = period.map((e, i) => ({
-    value: e?.stress ?? null,
-    label: shortLabel(keys[i], days),
+    value: e?.stress ?? null, label: shortLabel(keys[i], days),
   }));
 
   return (
-    <div className="min-h-dvh px-5 pt-6 pb-12 anim-fade-slow">
-      <button onClick={onClose} className="text-sm text-[var(--color-ink-500)] font-sans press py-2">← Home</button>
+    <main className="min-h-dvh px-5 pt-6 pb-14">
+      <button onClick={onClose} className="label draw-underline text-[var(--paper-200)] press py-2">
+        ← Home
+      </button>
 
-      <h1 className="text-3xl tracking-tight mt-3 anim-slide-up">
-        {kind === 'biweekly' ? 'Your fortnight' : 'Your week'}
-      </h1>
-      <p className="text-sm text-[var(--color-ink-500)] mt-1 font-sans anim-fade delay-100">
-        {formatDate(keys[0])} — {formatDate(keys[keys.length - 1])}
-      </p>
+      <header className="mt-5 anim-lift">
+        <div className="label">{kind === 'biweekly' ? 'Fortnight in review' : 'Week in review'}</div>
+        <h1 className="display-xl mt-3 text-[var(--paper-50)]">
+          {kind === 'biweekly' ? 'Your fortnight' : 'Your week'}
+        </h1>
+        <p className="body-md mt-3 text-[var(--paper-200)]">
+          {formatDate(keys[0])} — {formatDate(keys[keys.length - 1])}
+        </p>
+      </header>
 
-      <section className="mt-8 soft-card p-5 anim-slide-up delay-200">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">narrative</div>
+      <section className="mt-9 surface-card p-6 anim-lift delay-100">
+        <div className="label mb-4">Narrative</div>
         {loading ? (
           <SkeletonSummary />
         ) : (
-          <p className="text-[16px] leading-relaxed whitespace-pre-line anim-fade-slow">{summary}</p>
+          <NarrativeReveal text={summary} />
         )}
       </section>
 
-      <section className="mt-6 soft-card p-5 anim-slide-up delay-300">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">mood</div>
-        <LineChart points={moodPoints} color="#5d7a62" />
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 mt-6 font-sans">stress</div>
-        <LineChart points={stressPoints} color="#5c7286" />
+      <section className="mt-5 surface-card p-6 anim-lift delay-200">
+        <div className="label mb-3">Mood</div>
+        <LineChart points={moodPoints} variant="mood" height={150} />
+        <div className="label mt-7 mb-3">Stress</div>
+        <LineChart points={stressPoints} variant="stress" height={150} />
       </section>
 
-      <section className="mt-6 grid grid-cols-2 gap-3 anim-slide-up delay-400">
-        <Highlight title="Best day" entry={best} kind="mood-up" />
-        <Highlight title="Hardest day" entry={hardest} kind="mood-down" />
+      <section className="mt-5 grid grid-cols-2 gap-3 anim-lift delay-300">
+        <Highlight title="Best day" entry={best} tone="ember" />
+        <Highlight title="Hardest day" entry={hardest} tone="moon" />
       </section>
 
       {themes.length > 0 && (
-        <section className="mt-6 soft-card p-5 anim-slide-up delay-500">
-          <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">recurring themes</div>
+        <section className="mt-5 surface-card p-6 anim-lift delay-400">
+          <div className="label mb-4">Recurring themes</div>
           <div className="flex flex-wrap gap-2">
             {themes.map(t => (
               <span key={t.word}
-                className="px-3 py-1 rounded-full text-sm bg-[var(--color-cream-200)] text-[var(--color-ink-700)] font-sans">
+                className="px-3 py-1 rounded-full body-sm"
+                style={{ background: 'var(--ink-700)', color: 'var(--paper-200)' }}>
                 {t.word} · {t.count}
               </span>
             ))}
@@ -85,9 +88,9 @@ export default function WeeklySummary({ entries, apiKey, kind = 'weekly', haptic
         </section>
       )}
 
-      <section className="mt-6 soft-card p-5 anim-slide-up delay-500">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">your reflection</div>
-        <p className="text-sm text-[var(--color-ink-700)] mb-3">
+      <section className="mt-5 surface-card rail-moon p-6 anim-lift delay-400">
+        <div className="label mb-3">Your reflection</div>
+        <p className="body-md text-[var(--paper-200)] mb-4">
           How did the {kind === 'biweekly' ? 'fortnight' : 'week'} feel, as a whole?
         </p>
         <VoiceCapture
@@ -99,55 +102,75 @@ export default function WeeklySummary({ entries, apiKey, kind = 'weekly', haptic
         <button
           type="button"
           onClick={() => {
-            // Regenerate narrative with the user's reflection folded in
             setLoading(true);
             generateSummary({ apiKey, entries: present, kind, userReflection: reflection })
               .then(text => { setSummary(text); setLoading(false); });
           }}
           disabled={!reflection.trim() || loading}
-          className={`mt-4 w-full py-4 rounded-2xl press
-                      bg-[var(--color-dusk-700)] text-[#faf6ef]
-                      ${(!reflection.trim() || loading) ? 'opacity-60' : ''}`}
+          className={`mt-5 w-full h-[52px] rounded-full press body-lg
+                      ${(!reflection.trim() || loading) ? 'opacity-50' : ''}`}
+          style={{
+            background: 'linear-gradient(180deg, #B8C7DE 0%, #7B91B0 60%, #4D6280 100%)',
+            color: '#0E1117',
+            boxShadow: 'var(--shadow-md), var(--glow-moon)',
+          }}
         >
           Save reflection
         </button>
       </section>
 
-      <section className="mt-8">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">days</div>
-        <div className="space-y-2">
-          {keys.map((k, i) => (
-            <div key={k} className="anim-slide-up" style={{ animationDelay: `${i * 30}ms` }}>
-              <EntryCard dateKey={k} entry={entries[k]} faded />
-            </div>
+      <section className="mt-9">
+        <div className="label mb-3">Days</div>
+        <div>
+          {keys.map((k) => (
+            <EntryCard key={k} dateKey={k} entry={entries[k]} />
           ))}
         </div>
       </section>
+    </main>
+  );
+}
+
+function NarrativeReveal({ text }) {
+  // Stagger by paragraph with ink-bleed
+  const paragraphs = text.split(/\n\n+/);
+  return (
+    <div>
+      {paragraphs.map((p, i) => (
+        <p
+          key={i}
+          className="body-lg text-[var(--paper-50)] mb-4 anim-ink-bleed"
+          style={{ animationDelay: `${i * 120}ms`, animationDuration: '700ms' }}
+        >
+          {p}
+        </p>
+      ))}
     </div>
   );
 }
 
-function Highlight({ title, entry, kind }) {
+function Highlight({ title, entry, tone }) {
+  const rail = tone === 'ember' ? 'rail-ember' : 'rail-moon';
   if (!entry) {
     return (
-      <div className="soft-card-muted p-4">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] font-sans">{title}</div>
-        <div className="text-sm text-[var(--color-ink-500)] mt-2 italic">no entries yet</div>
+      <div className={`surface-card ${rail} p-4`}>
+        <div className="label">{title}</div>
+        <div className="body-sm text-[var(--paper-400)] mt-3 italic">no entries yet</div>
       </div>
     );
   }
   const moodLabel = labelForValue(MOOD_LABELS, entry.mood).label;
   const stressLabel = labelForValue(STRESS_LABELS, entry.stress).label;
   return (
-    <div className="soft-card p-4">
-      <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] font-sans">{title}</div>
-      <div className="text-lg tracking-tight mt-1">{formatDayShort(entry.date)}</div>
-      <div className="text-[11px] uppercase tracking-wider mt-1 font-sans"
-           style={{ color: kind === 'mood-up' ? 'var(--color-sage-700)' : 'var(--color-clay-700)' }}>
+    <div className={`surface-card ${rail} p-4`}>
+      <div className="label">{title}</div>
+      <div className="display-sm mt-2 text-[var(--paper-50)]">{formatDayShort(entry.date)}</div>
+      <div className="label mt-1"
+           style={{ color: tone === 'ember' ? 'var(--ember-300)' : 'var(--moon-300)' }}>
         {moodLabel} · {stressLabel}
       </div>
       {entry.transcript && (
-        <p className="text-[13px] mt-2 text-[var(--color-ink-700)] line-clamp-3">
+        <p className="body-sm mt-2 text-[var(--paper-200)] line-clamp-3">
           {entry.transcript.slice(0, 110)}…
         </p>
       )}

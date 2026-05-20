@@ -1,185 +1,160 @@
 @import "tailwindcss";
 
-/* ---------- Reflection theme ----------
-   Warm, muted tones: creams, dusty blues, soft sage.
-   Animation philosophy: breath-like, never snappy.
------------------------------------------ */
+/* Variable fonts — only the latin range woff2 will download per @font-face's unicode-range */
+@import "@fontsource-variable/fraunces/full.css";
+@import "@fontsource-variable/inter/wght.css";
 
-@theme {
-  --color-cream-50: #faf6ef;
-  --color-cream-100: #f5efe6;
-  --color-cream-200: #ece3d3;
-  --color-cream-300: #ddd0b8;
-  --color-ink-900: #2d2a26;
-  --color-ink-700: #5b554b;
-  --color-ink-500: #857d70;
-  --color-ink-300: #b6ad9d;
-  --color-sage-300: #b9c9b5;
-  --color-sage-500: #8aa48b;
-  --color-sage-700: #5d7a62;
-  --color-dusk-300: #c8d2db;
-  --color-dusk-500: #8aa0b4;
-  --color-dusk-700: #5c7286;
-  --color-clay-300: #e6c9b7;
-  --color-clay-500: #c89a7c;
-  --color-clay-700: #9a6e54;
-}
+@import "./styles/tokens.css";
+@import "./styles/motion.css";
+
+/* ---------- Base ---------- */
 
 @layer base {
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
   html, body, #root {
     height: 100dvh;
     min-height: 100dvh;
     margin: 0;
     padding: 0;
-    background: var(--color-cream-100);
-    color: var(--color-ink-900);
-    font-family: 'Georgia', 'Iowan Old Style', 'Charter', ui-serif, serif;
+    background: var(--ink-900);
+    color: var(--paper-50);
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     overscroll-behavior: none;
+    accent-color: var(--ember-500);
   }
+
   body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    background: var(--ink-900);
   }
+
   button { font-family: inherit; color: inherit; }
-  .font-sans { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+  /* Selection */
+  ::selection { background: var(--ember-700); color: var(--paper-50); }
 }
 
-/* ---------- Keyframes (breath-like) ---------- */
+/* ---------- Grain overlay — paper feel on dark surfaces ---------- */
 
-@keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.04); opacity: 1; }
-}
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fade-in-slow {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes slide-down {
-  from { opacity: 0; transform: translateY(-14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 0.85; }
-}
-@keyframes streak-bounce {
-  0%   { transform: scale(1); }
-  35%  { transform: scale(1.18); }
-  60%  { transform: scale(0.96); }
-  100% { transform: scale(1); }
-}
-@keyframes ember {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
-  50%      { transform: translateY(-3px) scale(1.06); opacity: 1; }
-}
-@keyframes unlock {
-  0%   { transform: translateY(20px) scale(0.96); opacity: 0; }
-  60%  { transform: translateY(-4px) scale(1.04); opacity: 1; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-@keyframes rec-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 154, 124, 0.55); }
-  50%      { box-shadow: 0 0 0 14px rgba(200, 154, 124, 0); }
-}
-@keyframes line-draw {
-  from { stroke-dashoffset: 1000; }
-  to   { stroke-dashoffset: 0; }
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+  opacity: 0.06;
 }
 
-/* ---------- Animation utilities ---------- */
-
-.anim-fade        { animation: fade-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-fade-slow   { animation: fade-in-slow 1.2s ease-out both; }
-.anim-slide-up    { animation: slide-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-slide-down  { animation: slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-breathe     { animation: breathe 5s ease-in-out infinite; }
-.anim-skeleton    { animation: skeleton-pulse 2.2s ease-in-out infinite; }
-.anim-streak      { animation: streak-bounce 0.9s cubic-bezier(0.22, 1.4, 0.36, 1); }
-.anim-ember       { animation: ember 2.4s ease-in-out infinite; }
-.anim-unlock      { animation: unlock 0.9s cubic-bezier(0.22, 1.4, 0.36, 1) both; }
-.anim-rec-pulse   { animation: rec-pulse 1.8s ease-out infinite; }
-.anim-line-draw   { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: line-draw 1.4s ease-out forwards; }
-
-.delay-100 { animation-delay: 0.10s; }
-.delay-200 { animation-delay: 0.20s; }
-.delay-300 { animation-delay: 0.30s; }
-.delay-400 { animation-delay: 0.40s; }
-.delay-500 { animation-delay: 0.50s; }
-.delay-600 { animation-delay: 0.60s; }
-
-/* ---------- Tap / press feedback ---------- */
-
-.press {
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.press:active { transform: scale(0.97); }
-.press-grow:active { transform: scale(1.02); }
-
-/* ---------- Cards ---------- */
-
-.soft-card {
-  background: #fdfaf3;
-  border: 1px solid rgba(93, 122, 98, 0.10);
-  border-radius: 20px;
-  box-shadow: 0 1px 0 rgba(45, 42, 38, 0.03),
-              0 6px 18px -10px rgba(45, 42, 38, 0.18);
-}
-
-.soft-card-muted {
-  background: rgba(255, 253, 248, 0.55);
-  border: 1px dashed rgba(133, 125, 112, 0.35);
-  border-radius: 20px;
-}
+/* Ensure interactive content sits above the grain */
+.app-shell { position: relative; z-index: 2; }
 
 /* ---------- Scrollbars ---------- */
 
 ::-webkit-scrollbar { width: 0; height: 0; }
-.scroll-snap-x {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.snap-center { scroll-snap-align: center; }
-
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 
-/* ---------- Slider tracks ---------- */
-.feeling-track {
-  height: 14px;
-  border-radius: 999px;
-  background: linear-gradient(90deg,
-    var(--color-clay-300) 0%,
-    var(--color-cream-200) 50%,
-    var(--color-sage-300) 100%);
+/* ---------- Inputs ---------- */
+
+input[type="time"], input[type="text"], input[type="password"], textarea {
+  font-family: var(--font-body);
+  color: var(--paper-50);
+  background: var(--ink-700);
+  border: 1px solid var(--ink-600);
+  border-radius: var(--r-md);
+  caret-color: var(--ember-500);
 }
-.stress-track {
-  background: linear-gradient(90deg,
-    var(--color-sage-300) 0%,
-    var(--color-cream-200) 50%,
-    var(--color-clay-300) 100%);
+input[type="time"]:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+  outline: none;
+  border-color: var(--ember-500);
+  box-shadow: 0 0 0 3px rgba(232,137,74,0.18);
+}
+textarea { resize: none; }
+
+/* ---------- Sliders: feeling track ---------- */
+/* @property allows the gradient angle / stops to animate smoothly */
+@property --fill-pct {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 50%;
+}
+@property --grad-from {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #B45F2A;
+}
+@property --grad-to {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #6B8268;
 }
 
-.thumb {
-  width: 38px;
-  height: 38px;
+.feeling-track {
+  height: 56px;
   border-radius: 999px;
-  background: #fdfaf3;
-  border: 1px solid rgba(93, 122, 98, 0.25);
-  box-shadow: 0 6px 18px -8px rgba(45,42,38,0.35);
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--ink-700);
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.4),
+              inset 0 -1px 0 rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+  transition: --fill-pct 200ms var(--ease-out-soft);
 }
-.thumb.dragging { transform: scale(1.10); }
+.feeling-track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--grad-from) 0%, var(--grad-to) 100%);
+  -webkit-mask: linear-gradient(90deg, black 0%, black var(--fill-pct), transparent var(--fill-pct));
+          mask: linear-gradient(90deg, black 0%, black var(--fill-pct), transparent var(--fill-pct));
+  opacity: 0.85;
+  transition: --grad-from 400ms var(--ease-out-soft),
+              --grad-to   400ms var(--ease-out-soft);
+}
+.feeling-track::after {
+  /* tick hairlines */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(90deg, transparent calc(0%   - 0.5px), rgba(168,154,130,0.18) 0, rgba(168,154,130,0.18) calc(0%   + 0.5px), transparent calc(0%   + 0.5px)),
+    linear-gradient(90deg, transparent calc(25%  - 0.5px), rgba(168,154,130,0.18) 0, rgba(168,154,130,0.18) calc(25%  + 0.5px), transparent calc(25%  + 0.5px)),
+    linear-gradient(90deg, transparent calc(50%  - 0.5px), rgba(168,154,130,0.25) 0, rgba(168,154,130,0.25) calc(50%  + 0.5px), transparent calc(50%  + 0.5px)),
+    linear-gradient(90deg, transparent calc(75%  - 0.5px), rgba(168,154,130,0.18) 0, rgba(168,154,130,0.18) calc(75%  + 0.5px), transparent calc(75%  + 0.5px)),
+    linear-gradient(90deg, transparent calc(100% - 1px),   rgba(168,154,130,0.18) 0, rgba(168,154,130,0.18) 100%,                  transparent 100%);
+  pointer-events: none;
+}
+
+.feeling-thumb {
+  position: absolute;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--paper-50);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: translate(-50%, -50%);
+  transition: transform 280ms var(--ease-out-soft),
+              box-shadow 280ms var(--ease-out-soft);
+}
+.feeling-thumb.dragging {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.feeling-thumb.ember.dragging { box-shadow: var(--shadow-md), var(--glow-ember), inset 0 1px 0 rgba(255,255,255,0.6); }
+.feeling-thumb.moon.dragging  { box-shadow: var(--shadow-md), var(--glow-moon),  inset 0 1px 0 rgba(255,255,255,0.6); }
+
+/* ---------- Animated underline on small labels ---------- */
+.draw-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 320ms var(--ease-out-soft);
+}
+.draw-underline:hover,
+.draw-underline:focus-visible { background-size: 100% 1px; }

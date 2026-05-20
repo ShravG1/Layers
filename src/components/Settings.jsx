@@ -6,109 +6,135 @@ export default function Settings({ settings, onChange, onClose, onExport, entrie
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   );
 
-  const askPermission = async () => {
-    const r = await requestPermission();
-    setPermission(r);
-  };
+  const askPermission = async () => setPermission(await requestPermission());
 
   return (
-    <div className="min-h-dvh px-5 pt-6 pb-12 anim-fade">
-      <button onClick={onClose} className="text-sm text-[var(--color-ink-500)] font-sans press py-2">← Home</button>
-      <h1 className="text-3xl tracking-tight mt-3 anim-slide-up">Settings</h1>
+    <main className="min-h-dvh px-5 pt-6 pb-12 anim-ink-fade">
+      <button onClick={onClose} className="label draw-underline text-[var(--paper-200)] press py-2">
+        ← Home
+      </button>
 
-      <section className="mt-8 soft-card p-5 anim-slide-up delay-100">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">summary frequency</div>
+      <header className="mt-5 anim-lift">
+        <div className="label">Settings</div>
+        <h1 className="display-xl mt-3 text-[var(--paper-50)]">Adjust the room</h1>
+      </header>
+
+      <Section title="Summary frequency" delay="delay-100">
         <div className="grid grid-cols-3 gap-2">
           {[
             { v: 'weekly', l: 'Weekly' },
             { v: 'biweekly', l: 'Biweekly' },
-            { v: 'monthly-only', l: 'Monthly only' },
-          ].map(opt => (
-            <button
-              key={opt.v}
-              onClick={() => onChange({ summaryFrequency: opt.v })}
-              className={`py-3 rounded-xl press text-sm font-sans
-                          ${settings.summaryFrequency === opt.v
-                            ? 'bg-[var(--color-sage-700)] text-[#faf6ef]'
-                            : 'bg-[var(--color-cream-200)] text-[var(--color-ink-700)]'}`}
-            >
-              {opt.l}
-            </button>
-          ))}
+            { v: 'monthly-only', l: 'Monthly' },
+          ].map(opt => {
+            const active = settings.summaryFrequency === opt.v;
+            return (
+              <button
+                key={opt.v}
+                onClick={() => onChange({ summaryFrequency: opt.v })}
+                className="py-3 rounded-[var(--r-md)] press body-md"
+                style={{
+                  background: active ? 'var(--ember-500)' : 'var(--ink-700)',
+                  color: active ? '#1A0F08' : 'var(--paper-200)',
+                  boxShadow: active ? 'var(--shadow-sm), var(--glow-ember)' : 'var(--shadow-sm)',
+                }}
+              >
+                {opt.l}
+              </button>
+            );
+          })}
         </div>
-        <p className="text-xs text-[var(--color-ink-500)] mt-3 font-sans">
+        <p className="body-sm mt-3 text-[var(--paper-400)]">
           Monthly summaries always run, regardless of this setting.
         </p>
-      </section>
+      </Section>
 
-      <section className="mt-6 soft-card p-5 anim-slide-up delay-200">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">notification time</div>
+      <Section title="Notification time" delay="delay-200">
         <input
           type="time"
           value={settings.notificationTime}
           onChange={(e) => onChange({ notificationTime: e.target.value })}
-          className="w-full p-3 rounded-xl bg-[#fdfaf3] border border-[rgba(93,122,98,0.15)] text-lg"
+          className="w-full px-4 py-3 body-lg"
+          style={{ colorScheme: 'dark' }}
         />
-        <p className="text-xs text-[var(--color-ink-500)] mt-2 font-sans">
-          You'll be reminded daily, plus weekly and monthly summaries 30 minutes later.
+        <p className="body-sm mt-2 text-[var(--paper-400)]">
+          Reminders fire at this time. Weekly and monthly summaries 30 minutes later.
         </p>
-        <div className="mt-4 flex items-center justify-between">
-          <div>
-            <div className="text-sm font-sans">Permission</div>
-            <div className="text-xs text-[var(--color-ink-500)] font-sans">
-              {permission === 'granted' ? 'Allowed' :
-               permission === 'denied' ? 'Blocked — enable in browser settings' :
-               permission === 'unsupported' ? 'Not supported on this device' :
-               'Not yet asked'}
-            </div>
-          </div>
-          {permission !== 'granted' && permission !== 'denied' && permission !== 'unsupported' && (
-            <button onClick={askPermission}
-              className="px-4 py-2 rounded-xl bg-[var(--color-sage-700)] text-[#faf6ef] text-sm press font-sans">
-              Enable
-            </button>
-          )}
-        </div>
-      </section>
+        <Row
+          label="Permission"
+          hint={permissionText(permission)}
+          action={
+            permission === 'default' && (
+              <button onClick={askPermission}
+                className="px-4 py-2 rounded-[var(--r-md)] press body-md"
+                style={{ background: 'var(--ember-500)', color: '#1A0F08', boxShadow: 'var(--shadow-sm)' }}>
+                Enable
+              </button>
+            )
+          }
+        />
+      </Section>
 
-      <section className="mt-6 soft-card p-5 anim-slide-up delay-300">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">haptics</div>
-        <label className="flex items-center justify-between">
-          <span className="font-sans text-sm">Subtle tap feedback</span>
-          <Toggle on={settings.hapticsEnabled} onChange={(v) => onChange({ hapticsEnabled: v })} />
-        </label>
-      </section>
+      <Section title="Feel" delay="delay-300">
+        <Row
+          label="Subtle haptics"
+          hint="Soft vibration when sliders cross a tick"
+          action={<Toggle on={settings.hapticsEnabled} onChange={(v) => onChange({ hapticsEnabled: v })} />}
+        />
+      </Section>
 
-      <section className="mt-6 soft-card p-5 anim-slide-up delay-400">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">claude api key (optional)</div>
-        <p className="text-xs text-[var(--color-ink-500)] font-sans mb-3">
-          Used to generate weekly and monthly narrative summaries. Stored only on this device. Leave empty to use a local fallback summariser.
-        </p>
+      <Section title="Claude API key" hint="Optional · powers the weekly and monthly narratives. Stored only on this device." delay="delay-400">
         <input
           type="password"
           value={settings.apiKey}
           onChange={(e) => onChange({ apiKey: e.target.value.trim() })}
           placeholder="sk-ant-…"
-          className="w-full p-3 rounded-xl bg-[#fdfaf3] border border-[rgba(93,122,98,0.15)] text-sm font-sans"
+          className="w-full px-4 py-3 body-md"
         />
-      </section>
+        <p className="body-sm mt-2 text-[var(--paper-400)]">
+          Without a key, a local fallback summariser is used.
+        </p>
+      </Section>
 
-      <section className="mt-6 soft-card p-5 anim-slide-up delay-500">
-        <div className="text-xs uppercase tracking-widest text-[var(--color-ink-500)] mb-3 font-sans">your data</div>
-        <p className="text-sm text-[var(--color-ink-700)] font-sans">
-          {entriesCount} {entriesCount === 1 ? 'entry' : 'entries'} stored only on this device.
+      <Section title="Your data" delay="delay-500">
+        <p className="body-md text-[var(--paper-200)]">
+          {entriesCount} {entriesCount === 1 ? 'entry' : 'entries'} live only on this device.
         </p>
         <button
           onClick={onExport}
-          className="mt-3 w-full py-3 rounded-xl bg-[var(--color-dusk-700)] text-[#faf6ef] text-sm press font-sans"
+          className="mt-4 w-full h-12 rounded-full press body-md"
+          style={{
+            background: 'linear-gradient(180deg, #B8C7DE 0%, #7B91B0 60%, #4D6280 100%)',
+            color: '#0E1117',
+            boxShadow: 'var(--shadow-sm), var(--glow-moon)',
+          }}
         >
           Export as JSON
         </button>
-      </section>
+      </Section>
 
-      <p className="mt-8 text-center text-xs text-[var(--color-ink-300)] font-sans">
-        Reflection · made for quiet evenings
-      </p>
+      <p className="mt-10 text-center label">Reflection · made for quiet evenings</p>
+    </main>
+  );
+}
+
+function Section({ title, hint, delay, children }) {
+  return (
+    <section className={`mt-8 anim-lift ${delay || ''}`}>
+      <div className="label mb-4">{title}</div>
+      {hint && <p className="body-sm text-[var(--paper-400)] -mt-2 mb-4">{hint}</p>}
+      <div className="surface-card p-5">{children}</div>
+    </section>
+  );
+}
+
+function Row({ label, hint, action }) {
+  return (
+    <div className="flex items-center justify-between gap-4 pt-4 mt-4 border-t border-[var(--ink-600)] first:pt-0 first:mt-0 first:border-t-0">
+      <div className="min-w-0">
+        <div className="body-md text-[var(--paper-50)]">{label}</div>
+        {hint && <div className="body-sm text-[var(--paper-400)] mt-0.5">{hint}</div>}
+      </div>
+      {action}
     </div>
   );
 }
@@ -118,14 +144,29 @@ function Toggle({ on, onChange }) {
     <button
       type="button"
       onClick={() => onChange(!on)}
-      className={`w-12 h-7 rounded-full press relative transition-colors duration-300
-                  ${on ? 'bg-[var(--color-sage-500)]' : 'bg-[var(--color-cream-300)]'}`}
       aria-pressed={on}
+      className="w-12 h-7 rounded-full press relative shrink-0"
+      style={{
+        background: on ? 'var(--ember-500)' : 'var(--ink-600)',
+        boxShadow: on ? 'var(--shadow-sm), var(--glow-ember)' : 'var(--shadow-sm)',
+        transition: 'background 320ms var(--ease-out-soft), box-shadow 320ms var(--ease-out-soft)',
+      }}
     >
       <span
-        className="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-[#fdfaf3] shadow-md transition-transform duration-300"
-        style={{ transform: on ? 'translateX(20px)' : 'translateX(0)' }}
+        className="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-[var(--paper-50)]"
+        style={{
+          transform: on ? 'translateX(20px)' : 'translateX(0)',
+          transition: 'transform 320ms var(--ease-out-soft)',
+          boxShadow: 'var(--shadow-sm)',
+        }}
       />
     </button>
   );
+}
+
+function permissionText(p) {
+  if (p === 'granted') return 'Allowed';
+  if (p === 'denied') return 'Blocked · enable in browser settings';
+  if (p === 'unsupported') return 'Not supported on this device';
+  return 'Not yet asked';
 }

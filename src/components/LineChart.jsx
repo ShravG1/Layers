@@ -1,54 +1,108 @@
-// Lightweight inline SVG line chart for Mood & Stress.
+// Inline SVG line chart with gradient fill and stroke-dash line-draw on mount.
 
-export default function LineChart({ points, color = '#5d7a62', label, height = 140 }) {
+export default function LineChart({ points, variant = 'mood', label, height = 160 }) {
+  const color = variant === 'mood' ? '#E8894A' : '#7B91B0';
+  const gradId = `grad-${variant}`;
   const width = 320;
-  const pad = { l: 28, r: 16, t: 14, b: 22 };
+  const pad = { l: 22, r: 14, t: 14, b: 26 };
   const inner = { w: width - pad.l - pad.r, h: height - pad.t - pad.b };
 
-  const filled = points.filter(p => p.value != null);
-  const xs = points.map((_, i) => pad.l + (points.length === 1 ? inner.w / 2 : (i / (points.length - 1)) * inner.w));
+  const xs = points.map((_, i) =>
+    pad.l + (points.length === 1 ? inner.w / 2 : (i / (points.length - 1)) * inner.w)
+  );
   const y = (v) => pad.t + inner.h - ((v - 1) / 9) * inner.h;
 
-  let d = '';
-  let drew = false;
+  // Build line segments; if a point is missing the path breaks
+  const segments = [];
+  let current = [];
   points.forEach((p, i) => {
-    if (p.value == null) { drew = false; return; }
-    const cmd = drew ? 'L' : 'M';
-    d += `${cmd}${xs[i].toFixed(1)},${y(p.value).toFixed(1)} `;
-    drew = true;
+    if (p.value == null) {
+      if (current.length) { segments.push(current); current = []; }
+      return;
+    }
+    current.push({ x: xs[i], y: y(p.value) });
   });
+  if (current.length) segments.push(current);
 
-  // Gridlines for 1-10 range, drawn as faint horizontal lines
+  const linePath = segments
+    .map(seg => seg.map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).join(' '))
+    .join(' ');
+
+  // Fill polygon under the line
+  const fillPath = segments
+    .map(seg => {
+      if (seg.length < 2) return '';
+      const start = `M${seg[0].x.toFixed(1)},${(pad.t + inner.h).toFixed(1)}`;
+      const top = seg.map((pt, i) => `${i === 0 ? 'L' : 'L'}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).join(' ');
+      const end = `L${seg[seg.length - 1].x.toFixed(1)},${(pad.t + inner.h).toFixed(1)} Z`;
+      return `${start} ${top} ${end}`;
+    })
+    .join(' ');
+
   const grid = [1, 5.5, 10];
+  const filled = points.filter(p => p.value != null);
 
   return (
     <div className="w-full">
-      {label && <div className="text-xs text-[var(--color-ink-500)] mb-1 font-sans">{label}</div>}
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label={`${label} line chart`}>
+      {label && <div className="label mb-2">{label}</div>}
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        width="100%"
+        height={height}
+        role="img"
+        aria-label={`${variant} chart`}
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%"  stopColor={color} stopOpacity="0.45" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
         {grid.map((g, i) => (
           <line key={i}
             x1={pad.l} x2={width - pad.r}
             y1={y(g)} y2={y(g)}
-            stroke="rgba(45,42,38,0.08)" strokeDasharray="2 4"
+            stroke="rgba(168,154,130,0.10)"
+            strokeDasharray={i === 1 ? '0' : '2 5'}
           />
         ))}
-        {d && (
-          <path d={d} fill="none" stroke={color} strokeWidth="2.4"
-                strokeLinecap="round" strokeLinejoin="round"
-                className="anim-line-draw" />
+
+        {fillPath && (
+          <path d={fillPath} fill={`url(#${gradId})`} className="anim-ink-fade" />
+        )}
+        {linePath && (
+          <path
+            d={linePath}
+            fill="none"
+            stroke={color}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="anim-line-draw"
+          />
         )}
         {points.map((p, i) => p.value != null && (
-          <circle key={i} cx={xs[i]} cy={y(p.value)} r="3.4" fill={color} className="anim-fade-slow" />
+          <circle
+            key={i}
+            cx={xs[i]} cy={y(p.value)} r="3"
+            fill={color}
+            className="anim-ink-fade"
+            style={{ animationDelay: `${500 + i * 30}ms` }}
+          />
         ))}
-        {points.map((p, i) => (
-          <text key={`l-${i}`} x={xs[i]} y={height - 6}
-                fontSize="9" fill="rgba(45,42,38,0.55)"
-                fontFamily="ui-sans-serif, system-ui"
-                textAnchor="middle">{p.label}</text>
+        {points.map((p, i) => p.label && (
+          <text key={`lab-${i}`} x={xs[i]} y={height - 8}
+                fontSize="10" fill="var(--paper-400)"
+                fontFamily="Inter Variable, system-ui"
+                textAnchor="middle">
+            {p.label}
+          </text>
         ))}
       </svg>
       {filled.length === 0 && (
-        <div className="text-center text-xs text-[var(--color-ink-500)] -mt-10 font-sans">no entries yet</div>
+        <div className="text-center body-sm text-[var(--paper-400)] -mt-12">no entries yet</div>
       )}
     </div>
   );

@@ -3,15 +3,30 @@ import { labelForPosition, positionToValue, valueToPosition } from '../utils/lab
 import { tapLight } from '../utils/haptics.js';
 
 /**
- * A horizontal "scroll bar" the user drags. We show only the feeling label —
- * never numbers. Five label markers sit beneath the track as gentle hints.
+ * Full-bleed feeling slider.
+ * - 56px track, fill gradient interpolates ember-700 → sage-500 (mood) or
+ *   sage-500 → ember-700 (stress)
+ * - Crossfading display-md label above
+ * - Haptic tap each time the handle crosses a tick
  */
-export default function FeelingSlider({ labels, value, onChange, trackClass, color, hapticsEnabled = true }) {
+export default function FeelingSlider({
+  labels,
+  value,
+  onChange,
+  variant = 'mood', // 'mood' | 'stress'
+  hapticsEnabled = true,
+}) {
   const trackRef = useRef(null);
   const [dragging, setDragging] = useState(false);
-  const [localPos, setLocalPos] = useState(null); // overrides controlled value while dragging
-  const lastLabelIdx = useRef(-1);
+  const [localPos, setLocalPos] = useState(null);
+  const lastIdxRef = useRef(-1);
   const pos = localPos != null ? localPos : (value != null ? valueToPosition(value) : 0.5);
+
+  // Continuous label index (float) for the crossfade
+  const idxFloat = pos * (labels.length - 1);
+  const idxA = Math.floor(idxFloat);
+  const idxB = Math.min(labels.length - 1, idxA + 1);
+  const fade = idxFloat - idxA;
 
   const setFromClientX = useCallback((clientX) => {
     const rect = trackRef.current.getBoundingClientRect();
@@ -19,8 +34,8 @@ export default function FeelingSlider({ labels, value, onChange, trackClass, col
     const next = Math.max(0, Math.min(1, raw));
     setLocalPos(next);
     const { index } = labelForPosition(labels, next);
-    if (index !== lastLabelIdx.current) {
-      lastLabelIdx.current = index;
+    if (index !== lastIdxRef.current) {
+      lastIdxRef.current = index;
       tapLight(hapticsEnabled);
     }
     onChange?.(positionToValue(next));
@@ -45,39 +60,81 @@ export default function FeelingSlider({ labels, value, onChange, trackClass, col
     };
   }, [dragging, setFromClientX]);
 
-  const { label } = labelForPosition(labels, pos);
+  // Gradient stops: mood goes ember-700 → sage-500; stress goes sage-500 → ember-700.
+  // We interpolate by slider position so the fill colour at any handle position
+  // reflects where on the spectrum you are.
+  const isMood = variant === 'mood';
+  const colorPath = isMood
+    ? [['#B45F2A', '#A6753F'], ['#A6753F', '#8D7E55'], ['#8D7E55', '#7B826A'], ['#7B826A', '#6B8268']]
+    : [['#6B8268', '#7B826A'], ['#7B826A', '#8D7E55'], ['#8D7E55', '#A6753F'], ['#A6753F', '#B45F2A']];
+  const seg = Math.min(colorPath.length - 1, Math.floor(pos * colorPath.length));
+  const [gradFrom, gradTo] = colorPath[seg];
+
+  const accent = isMood ? 'var(--ember-500)' : 'var(--moon-500)';
+  const thumbClass = isMood ? 'ember' : 'moon';
 
   return (
     <div className="w-full select-none">
-      <div className="flex items-baseline justify-between mb-3">
-        <div
-          key={label}
-          className="text-2xl tracking-tight anim-fade"
-          style={{ color }}
+      {/* Crossfading label */}
+      <div className="relative h-[36px] mb-4">
+        <span
+          key={`a-${idxA}`}
+          className="display-md absolute left-0"
+          style={{ color: accent, opacity: 1 - fade, transition: 'opacity 220ms var(--ease-out-soft)' }}
         >
-          {label}
-        </div>
+          {labels[idxA]}
+        </span>
+        {idxB !== idxA && (
+          <span
+            key={`b-${idxB}`}
+            className="display-md absolute left-0"
+            style={{ color: accent, opacity: fade, transition: 'opacity 220ms var(--ease-out-soft)' }}
+          >
+            {labels[idxB]}
+          </span>
+        )}
       </div>
 
-      <div className="relative py-4"
-        onPointerDown={(e) => { setDragging(true); setFromClientX(e.clientX); }}
+      {/* Track + handle */}
+      <div
+        className="relative py-3 touch-none"
+        onPointerDown={(e) => { setDragging(true); setFromClientX(e.clientX); e.currentTarget.setPointerCapture?.(e.pointerId); }}
         onTouchStart={(e) => { setDragging(true); setFromClientX(e.touches[0].clientX); }}
       >
-        <div ref={trackRef} className={`feeling-track ${trackClass || ''}`} />
+        <div
+          ref={trackRef}
+          className="feeling-track"
+          style={{
+            '--fill-pct': `${pos * 100}%`,
+            '--grad-from': gradFrom,
+            '--grad-to': gradTo,
+          }}
+        />
         <div
           aria-hidden
-          className={`thumb absolute top-1/2 -translate-y-1/2 ${dragging ? 'dragging' : ''}`}
-          style={{ left: `calc(${pos * 100}% - 19px)` }}
+          className={`feeling-thumb ${thumbClass} ${dragging ? 'dragging' : ''}`}
+          style={{ left: `calc(${pos * 100}%)` }}
         />
       </div>
 
-      <div className="flex justify-between mt-1 font-sans">
-        {labels.map((l, i) => (
-          <span key={l}
-            className={`text-[10px] ${labelForPosition(labels, pos).index === i ? 'text-[var(--color-ink-700)]' : 'text-[var(--color-ink-300)]'} transition-colors`}>
-            {l}
-          </span>
-        ))}
+      {/* Tick labels */}
+      <div className="flex justify-between mt-3">
+        {labels.map((l, i) => {
+          const active = labelForPosition(labels, pos).index === i;
+          return (
+            <span
+              key={l}
+              className="label"
+              style={{
+                color: active ? 'var(--paper-200)' : 'var(--paper-400)',
+                opacity: active ? 1 : 0.7,
+                transition: 'color 320ms var(--ease-out-soft), opacity 320ms var(--ease-out-soft)',
+              }}
+            >
+              {l}
+            </span>
+          );
+        })}
       </div>
     </div>
   );

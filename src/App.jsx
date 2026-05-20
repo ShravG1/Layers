@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Home from './components/Home.jsx';
 import DailyEntry from './components/DailyEntry.jsx';
 import WeeklySummary from './components/WeeklySummary.jsx';
 import MonthlySummary from './components/MonthlySummary.jsx';
 import Settings from './components/Settings.jsx';
 import Onboarding from './components/Onboarding.jsx';
+import Grain from './components/Grain.jsx';
 import { useReflection } from './hooks/useReflection.js';
 import { storage } from './utils/storage.js';
 import { startScheduler } from './utils/notifications.js';
@@ -15,14 +16,24 @@ export default function App() {
   const [view, setView] = useState({ name: 'home' });
   const [onboarded, setOnboarded] = useState(() => storage.loadOnboarded());
 
+  // Route changes use the View Transitions API where supported,
+  // falling back to a plain set otherwise. Matches the ink-fade language.
+  const navigate = useCallback((next) => {
+    if (typeof document !== 'undefined' && document.startViewTransition) {
+      document.startViewTransition(() => setView(next));
+    } else {
+      setView(next);
+    }
+  }, []);
+
   useEffect(() => {
     const stop = startScheduler({
       getSettings: () => r.settings,
       getEntries: () => r.entries,
       getStreak: () => r.streak,
       onTrigger: ({ kind }) => {
-        if (kind === 'weekly' || kind === 'biweekly') setView({ name: 'weekly', kind });
-        else if (kind === 'monthly') setView({ name: 'monthly' });
+        if (kind === 'weekly' || kind === 'biweekly') navigate({ name: 'weekly', kind });
+        else if (kind === 'monthly') navigate({ name: 'monthly' });
       },
     });
     return stop;
@@ -41,78 +52,79 @@ export default function App() {
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
 
+  let screen;
   if (!onboarded) {
-    return (
+    screen = (
       <Onboarding onDone={() => {
         storage.saveOnboarded(true);
         setOnboarded(true);
       }} />
     );
-  }
-
-  if (view.name === 'entry') {
-    return (
+  } else if (view.name === 'entry') {
+    screen = (
       <DailyEntry
         targetDate={view.date}
         existing={r.entries[view.date]}
+        entryCount={Object.keys(r.entries).length}
         hapticsEnabled={r.settings.hapticsEnabled}
         onSave={(payload) => {
           r.saveEntry(payload);
-          setView({ name: 'home' });
+          navigate({ name: 'home' });
         }}
-        onCancel={() => setView({ name: 'home' })}
+        onCancel={() => navigate({ name: 'home' })}
       />
     );
-  }
-
-  if (view.name === 'weekly') {
-    return (
+  } else if (view.name === 'weekly') {
+    screen = (
       <WeeklySummary
         entries={r.entries}
         apiKey={r.settings.apiKey}
         kind={view.kind || 'weekly'}
         hapticsEnabled={r.settings.hapticsEnabled}
-        onClose={() => setView({ name: 'home' })}
+        onClose={() => navigate({ name: 'home' })}
       />
     );
-  }
-
-  if (view.name === 'monthly') {
-    return (
+  } else if (view.name === 'monthly') {
+    screen = (
       <MonthlySummary
         entries={r.entries}
         apiKey={r.settings.apiKey}
         hapticsEnabled={r.settings.hapticsEnabled}
-        onClose={() => setView({ name: 'home' })}
+        onClose={() => navigate({ name: 'home' })}
       />
     );
-  }
-
-  if (view.name === 'settings') {
-    return (
+  } else if (view.name === 'settings') {
+    screen = (
       <Settings
         settings={r.settings}
         onChange={r.updateSettings}
-        onClose={() => setView({ name: 'home' })}
+        onClose={() => navigate({ name: 'home' })}
         onExport={handleExport}
         entriesCount={Object.keys(r.entries).length}
+      />
+    );
+  } else {
+    screen = (
+      <Home
+        entries={r.entries}
+        streak={r.streak}
+        streakBumped={r.streakBumped}
+        todayEntry={r.todayEntry}
+        missedYesterday={r.missedYesterday}
+        summaryFrequency={r.settings.summaryFrequency}
+        onStartToday={() => navigate({ name: 'entry', date: todayKey() })}
+        onBackfill={() => navigate({ name: 'entry', date: yesterdayKey() })}
+        onOpenWeekly={() => navigate({ name: 'weekly', kind: r.settings.summaryFrequency === 'biweekly' ? 'biweekly' : 'weekly' })}
+        onOpenMonthly={() => navigate({ name: 'monthly' })}
+        onOpenSettings={() => navigate({ name: 'settings' })}
       />
     );
   }
 
   return (
-    <Home
-      entries={r.entries}
-      streak={r.streak}
-      streakBumped={r.streakBumped}
-      todayEntry={r.todayEntry}
-      missedYesterday={r.missedYesterday}
-      summaryFrequency={r.settings.summaryFrequency}
-      onStartToday={() => setView({ name: 'entry', date: todayKey() })}
-      onBackfill={() => setView({ name: 'entry', date: yesterdayKey() })}
-      onOpenWeekly={() => setView({ name: 'weekly', kind: r.settings.summaryFrequency === 'biweekly' ? 'biweekly' : 'weekly' })}
-      onOpenMonthly={() => setView({ name: 'monthly' })}
-      onOpenSettings={() => setView({ name: 'settings' })}
-    />
+    <>
+      <Grain />
+      <div className="app-shell">{screen}</div>
+    </>
   );
 }
