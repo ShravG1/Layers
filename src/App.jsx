@@ -134,8 +134,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col max-w-[420px] mx-auto bg-[#0a0a0a] h-[100dvh]">
-      <DebugBar />
+    <div className="flex flex-col h-[100dvh] max-w-[420px] mx-auto bg-[#0a0a0a] overflow-hidden">
       {/* Header */}
       <header
         className="px-4 pb-3 flex items-center justify-between border-b border-zinc-900/50 flex-shrink-0"
@@ -286,7 +285,7 @@ export default function App() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 pt-3 pb-3 text-[11px] flex flex-col items-center gap-1.5 transition-colors active:scale-95
+            className={`flex-1 pt-3 pb-2 text-[11px] flex flex-col items-center gap-1.5 transition-colors active:scale-95
               ${tab === t ? 'text-indigo-400' : 'text-zinc-600'}`}
           >
             <span className={`text-xl leading-none transition-transform ${tab === t ? 'scale-110' : 'scale-100 opacity-50'}`}>
@@ -332,47 +331,3 @@ export default function App() {
   )
 }
 
-// Temporary on-device diagnostics — remove once the layout is confirmed.
-function DebugBar() {
-  const probeRef = useRef(null)
-  const [info, setInfo] = useState('measuring…')
-
-  useEffect(() => {
-    const read = () => {
-      const sab = probeRef.current
-        ? getComputedStyle(probeRef.current).paddingBottom
-        : '?'
-      const standalone =
-        window.matchMedia?.('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true
-      const navEl = document.querySelector('nav')
-      const navBottom = navEl ? Math.round(navEl.getBoundingClientRect().bottom) : '?'
-      setInfo(
-        `inner:${window.innerHeight} screen:${window.screen?.height} ` +
-        `doc:${document.documentElement.clientHeight} ` +
-        `navBottom:${navBottom} scrollH:${document.documentElement.scrollHeight} ` +
-        `safeBottom:${sab} standalone:${standalone}`
-      )
-    }
-    read()
-    window.addEventListener('resize', read)
-    window.visualViewport?.addEventListener('resize', read)
-    return () => {
-      window.removeEventListener('resize', read)
-      window.visualViewport?.removeEventListener('resize', read)
-    }
-  }, [])
-
-  return (
-    <div
-      className="absolute top-0 left-0 right-0 z-[999] text-[10px] leading-tight text-lime-300 bg-black/85 px-2 py-1 font-mono pointer-events-none break-all"
-      style={{ paddingTop: 'env(safe-area-inset-top)' }}
-    >
-      <span
-        ref={probeRef}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)', position: 'fixed', visibility: 'hidden' }}
-      />
-      {info}
-    </div>
-  )
-}
