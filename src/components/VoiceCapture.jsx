@@ -11,6 +11,7 @@ const BAR_COUNT = 32;
 export default function VoiceCapture({
   value, audio, onChange, onAudio,
   hapticsEnabled = true,
+  compact = false,
   placeholder = "What's on your mind tonight?",
 }) {
   const [mode, setMode] = useState(audio ? 'voice' : (value ? 'text' : 'voice'));
@@ -82,11 +83,14 @@ export default function VoiceCapture({
     recRef.current = null;
   };
 
+  const orb = compact ? 'w-32 h-32' : 'w-44 h-44';
+  const knob = compact ? 'w-24 h-24' : 'w-36 h-36';
+
   return (
     <div className="w-full anim-lift-soft">
       {mode === 'voice' ? (
-        <div className="flex flex-col items-center gap-5">
-          <div className="relative w-44 h-44 flex items-center justify-center">
+        <div className={`flex flex-col items-center ${compact ? 'gap-3' : 'gap-5'}`}>
+          <div className={`relative ${orb} flex items-center justify-center`}>
             {/* Counter-phase ember glow */}
             <span
               aria-hidden
@@ -103,7 +107,7 @@ export default function VoiceCapture({
               onPointerCancel={stop}
               onTouchStart={(e) => { e.preventDefault(); start(); }}
               onTouchEnd={(e) => { e.preventDefault(); stop(); }}
-              className={`relative w-36 h-36 rounded-full
+              className={`relative ${knob} rounded-full
                           flex items-center justify-center
                           ${recording ? '' : 'anim-breathe'}`}
               style={{
@@ -123,7 +127,7 @@ export default function VoiceCapture({
           <div
             ref={barsRef}
             aria-hidden
-            className="flex items-end gap-[3px] h-9 transition-opacity duration-500"
+            className={`flex items-end gap-[3px] ${compact ? 'h-7' : 'h-9'} transition-opacity duration-500`}
             style={{ opacity: recording ? 1 : 0.25 }}
           >
             {Array.from({ length: BAR_COUNT }).map((_, i) => (
@@ -144,7 +148,7 @@ export default function VoiceCapture({
               ref={transcriptRef}
               className="w-full px-1 anim-ink-bleed"
             >
-              <p className="display-italic text-[19px] leading-[1.55] text-[var(--paper-50)]">
+              <p className={`display-italic text-[17px] leading-[1.5] text-[var(--paper-50)] ${compact ? 'line-clamp-2' : ''}`}>
                 {value}
               </p>
             </div>
@@ -168,7 +172,7 @@ export default function VoiceCapture({
             value={value || ''}
             onChange={(e) => onChange?.(e.target.value)}
             placeholder={placeholder}
-            rows={6}
+            rows={compact ? 3 : 6}
             className="w-full p-4 text-[16px] leading-relaxed body-lg"
           />
           <button

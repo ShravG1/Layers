@@ -17,13 +17,15 @@ export default function Home({
   onOpenSettings,
   summaryFrequency,
 }) {
-  const recent = lastNDaysKeys(7).reverse();
+  // A teaser steals room from the recent list, so show fewer rows when shown.
   const showWeeklyTeaser = summaryFrequency !== 'monthly-only' && isSunday();
   const showMonthlyTeaser = isFirstOfMonth();
+  const recentCount = (showWeeklyTeaser || showMonthlyTeaser) ? 3 : 5;
+  const recent = lastNDaysKeys(recentCount).reverse();
 
   return (
-    <main className="min-h-dvh px-5 pt-9 pb-12">
-      <header className="flex items-start justify-between mb-9 anim-lift">
+    <main className="h-dvh flex flex-col overflow-hidden px-5 pt-8 pb-6">
+      <header className="flex items-start justify-between mb-6 anim-lift shrink-0">
         <div>
           <div className="label">Reflection</div>
           <h1 className="display-lg mt-2 text-[var(--paper-50)]">{greetingFor()}</h1>
@@ -38,7 +40,7 @@ export default function Home({
         </button>
       </header>
 
-      <section className="mb-7 anim-lift delay-100">
+      <section className="mb-5 anim-lift delay-100 shrink-0">
         <StreakBadge entries={entries} count={streak.count} bumped={streakBumped} />
       </section>
 
@@ -46,14 +48,14 @@ export default function Home({
         <BackfillBanner onTap={onBackfill} />
       )}
 
-      <section className="anim-lift delay-200">
+      <section className="anim-lift delay-200 shrink-0">
         {todayEntry ? (
-          <article className="surface-card rail-ember p-6 anim-glow-rise">
+          <article className="surface-card rail-ember p-5 anim-glow-rise">
             <div className="label">tonight · saved</div>
-            <p className="display-italic text-[20px] leading-relaxed mt-3 text-[var(--paper-50)]">
+            <p className="display-italic text-[19px] leading-relaxed mt-2 text-[var(--paper-50)] line-clamp-3">
               {todayEntry.transcript || 'Saved without a note. Your feelings are logged.'}
             </p>
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-3">
               <span className="label text-[var(--ember-300)]">mood</span>
               <span className="label text-[var(--moon-300)]">stress</span>
             </div>
@@ -62,15 +64,15 @@ export default function Home({
           <button
             type="button"
             onClick={onStartToday}
-            className="block w-full text-left surface-card rail-ember press p-6 group relative overflow-hidden"
+            className="block w-full text-left surface-card rail-ember press p-5 group relative overflow-hidden"
             style={{ boxShadow: 'var(--shadow-lg), var(--glow-ember), inset 4px 0 0 var(--ember-500)' }}
           >
             <div className="label">Tonight</div>
-            <div className="display-lg mt-3 text-[var(--paper-50)]">Reflect on today</div>
-            <p className="body-md mt-2 text-[var(--paper-200)]">
+            <div className="display-lg mt-2 text-[var(--paper-50)]">Reflect on today</div>
+            <p className="body-md mt-1.5 text-[var(--paper-200)]">
               Voice or text. Two soft sliders. Under a minute.
             </p>
-            <ChevronGlyph className="absolute top-6 right-6 text-[var(--ember-500)] opacity-80 group-hover:translate-x-1 transition-transform duration-500" />
+            <ChevronGlyph className="absolute top-5 right-5 text-[var(--ember-500)] opacity-80 group-hover:translate-x-1 transition-transform duration-500" />
           </button>
         )}
       </section>
@@ -96,15 +98,16 @@ export default function Home({
         />
       )}
 
-      <section className="mt-10 anim-lift delay-300">
-        <div className="flex items-baseline justify-between mb-3">
+      {/* Recent list fills the remaining space without scrolling */}
+      <section className="mt-6 anim-lift delay-300 flex-1 min-h-0 flex flex-col">
+        <div className="flex items-baseline justify-between mb-2 shrink-0">
           <h2 className="label">Recent nights</h2>
           <div className="flex gap-4">
             <button onClick={onOpenWeekly} className="label draw-underline text-[var(--paper-200)]">Week</button>
             <button onClick={onOpenMonthly} className="label draw-underline text-[var(--paper-200)]">Month</button>
           </div>
         </div>
-        <div>
+        <div className="flex-1 min-h-0">
           {recent.map((k, i) => (
             <div
               key={k}
@@ -131,11 +134,11 @@ function SummaryTeaser({ label, title, subtitle, onTap, tone, delay }) {
     <button
       type="button"
       onClick={onTap}
-      className={`mt-5 w-full text-left surface-card ${rail} p-5 press anim-lift ${delay}`}
+      className={`mt-4 w-full text-left surface-card ${rail} p-4 press anim-lift shrink-0 ${delay}`}
     >
       <div className="label">{label}</div>
-      <div className="display-md mt-2 text-[var(--paper-50)]">{title}</div>
-      <div className="body-md mt-1.5 text-[var(--paper-200)]">{subtitle}</div>
+      <div className="display-sm mt-1.5 text-[var(--paper-50)]">{title}</div>
+      <div className="body-sm mt-1 text-[var(--paper-200)]">{subtitle}</div>
     </button>
   );
 }

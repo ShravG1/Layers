@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { requestPermission } from '../utils/notifications.js';
 import VocabularyPicker from './VocabularyPicker.jsx';
 import ThemePicker from './ThemePicker.jsx';
+import SwipePager from './SwipePager.jsx';
+import Dots from './Dots.jsx';
 
 export default function Onboarding({ settings, onChange, onDone }) {
   const [step, setStep] = useState(0);
@@ -23,7 +25,7 @@ export default function Onboarding({ settings, onChange, onDone }) {
       type: 'info',
       kicker: 'Tonight at ten',
       title: 'A gentle nudge each night',
-      body: 'A reminder fires at 10pm — you can change this. On iPhone, add Reflection to your Home Screen for the best experience.',
+      body: 'A reminder fires at 10pm — change it any time. On iPhone, add Reflection to your Home Screen for the best experience.',
       cta: 'Allow notifications',
       action: async () => { await requestPermission(); },
     },
@@ -31,121 +33,135 @@ export default function Onboarding({ settings, onChange, onDone }) {
       type: 'vocab',
       kicker: 'Choose your words',
       title: 'How should your feelings read?',
-      body: 'Pick the wording for the Mood and Stress bars. You can change this later — your history stays accurate.',
+      body: 'Pick the wording for the Mood and Stress bars. Change it later — your history stays accurate.',
     },
     {
       type: 'theme',
       kicker: 'Pick your feel',
       title: 'Choose the room you write in',
-      body: 'A complete look — colour, type, and motion. Change it any time in Settings.',
+      body: 'Colour, type and motion together. Change it any time in Settings.',
     },
   ];
 
   const s = steps[step];
   const isLast = step === steps.length - 1;
+
+  const goTo = (i) => setStep(Math.max(0, Math.min(steps.length - 1, i)));
   const advance = async () => {
     if (s.action) await s.action();
-    if (isLast) onDone(); else setStep(step + 1);
+    if (isLast) onDone(); else goTo(step + 1);
   };
 
-  const Dots = (
-    <div className="flex gap-2" aria-hidden>
-      {steps.map((_, i) => (
-        <span key={i}
-          className="h-1.5 rounded-full"
-          style={{
-            width: i === step ? 28 : 8,
-            background: i === step ? 'var(--ember-500)' : 'var(--ink-600)',
-            transition: 'width 380ms var(--ease-out-soft), background 380ms var(--ease-out-soft)',
-          }} />
-      ))}
-    </div>
-  );
-
-  const CTA = (
-    <button
-      onClick={advance}
-      className="w-full h-[56px] rounded-full press body-lg"
-      style={{
-        background: 'var(--grad-warm)',
-        color: 'var(--on-warm)',
-        boxShadow: 'var(--shadow-lg), var(--glow-ember)',
-      }}
-    >
-      {s.cta || (isLast ? 'Begin' : 'Continue')}
-    </button>
-  );
-
-  // ---- Picker steps: scrollable, header at top, CTA anchored ----
-  if (s.type === 'vocab' || s.type === 'theme') {
-    return (
-      <main className="min-h-dvh flex flex-col px-6 pt-10 pb-32">
-        <div key={step} className="anim-lift">
-          <div className="label">{s.kicker}</div>
-          <h1 className="display-lg mt-2 text-[var(--paper-50)]">{s.title}</h1>
-          <p className="body-md text-[var(--paper-200)] mt-3">{s.body}</p>
+  const panels = steps.map((st) => {
+    if (st.type === 'info') {
+      return (
+        <div className="h-full flex flex-col items-start justify-center px-6">
+          <div className="max-w-sm">
+            <div className="relative w-24 h-24 mb-9">
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full anim-breathe-glow"
+                style={{ background: 'radial-gradient(circle, color-mix(in srgb, var(--ember-500) 55%, transparent) 0%, transparent 70%)' }}
+              />
+              <span
+                aria-hidden
+                className="absolute inset-2 rounded-full anim-breathe"
+                style={{ background: 'radial-gradient(circle at 50% 45%, var(--ink-700) 0%, var(--ink-800) 80%)', boxShadow: 'var(--shadow-md)' }}
+              />
+            </div>
+            <div className="label">{st.kicker}</div>
+            <h1 className="display-lg mt-3 text-[var(--paper-50)]">{st.title}</h1>
+            <p className="body-lg text-[var(--paper-200)] mt-5">{st.body}</p>
+          </div>
         </div>
-
-        <div className="mt-7 anim-lift delay-100">
-          {s.type === 'vocab' ? (
+      );
+    }
+    return (
+      <div className="h-full flex flex-col px-6 pt-4">
+        <div className="shrink-0">
+          <div className="label">{st.kicker}</div>
+          <h1 className="display-md mt-2 text-[var(--paper-50)]">{st.title}</h1>
+          <p className="body-sm text-[var(--paper-200)] mt-2">{st.body}</p>
+        </div>
+        <div className="mt-5 flex-1 min-h-0">
+          {st.type === 'vocab' ? (
             <VocabularyPicker
               value={settings.vocabulary}
               onChange={(v) => onChange({ vocabulary: v })}
+              hapticsEnabled={settings.hapticsEnabled}
             />
           ) : (
             <ThemePicker
               value={settings.theme}
               accent={settings.paperAccent}
               onChange={({ theme, accent }) => onChange({ theme, paperAccent: accent })}
+              hapticsEnabled={settings.hapticsEnabled}
+              compact
             />
           )}
         </div>
-
-        <div
-          className="fixed left-0 right-0 bottom-0 px-6 pt-6 flex flex-col gap-4"
-          style={{
-            paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
-            background: 'linear-gradient(180deg, transparent 0%, var(--ink-900) 38%)',
-          }}
-        >
-          {Dots}
-          {CTA}
-        </div>
-      </main>
+      </div>
     );
-  }
+  });
 
-  // ---- Info steps: centred ----
   return (
-    <main className="min-h-dvh px-6 flex flex-col items-start justify-center">
-      <div key={step} className="anim-lift max-w-sm">
-        <div className="relative w-24 h-24 mb-10">
-          <span
-            aria-hidden
-            className="absolute inset-0 rounded-full anim-breathe-glow"
-            style={{ background: 'radial-gradient(circle, color-mix(in srgb, var(--ember-500) 55%, transparent) 0%, transparent 70%)' }}
-          />
-          <span
-            aria-hidden
-            className="absolute inset-2 rounded-full anim-breathe"
-            style={{ background: 'radial-gradient(circle at 50% 45%, var(--ink-700) 0%, var(--ink-800) 80%)', boxShadow: 'var(--shadow-md)' }}
-          />
-        </div>
-
-        <div className="label">{s.kicker}</div>
-        <h1 className="display-lg mt-3 text-[var(--paper-50)]">{s.title}</h1>
-        <p className="body-lg text-[var(--paper-200)] mt-5 leading-relaxed">{s.body}</p>
+    <main className="h-dvh flex flex-col overflow-hidden">
+      {/* Top bar — back button */}
+      <div className="shrink-0 h-12 flex items-center px-4">
+        {step > 0 ? (
+          <button
+            type="button"
+            onClick={() => goTo(step - 1)}
+            aria-label="Back"
+            className="press flex items-center gap-1.5 label text-[var(--paper-200)] py-2 pr-2"
+          >
+            <BackArrow /> Back
+          </button>
+        ) : <span />}
       </div>
 
-      <div className="absolute left-6 right-6 bottom-10 flex flex-col items-stretch gap-4">
-        {Dots}
-        {CTA}
+      {/* Swipeable content */}
+      <div className="flex-1 min-h-0">
+        <SwipePager index={step} count={steps.length} onIndexChange={goTo}>
+          {panels}
+        </SwipePager>
+      </div>
+
+      {/* Bottom chrome */}
+      <div
+        className="shrink-0 px-6 pt-4 flex flex-col gap-3"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}
+      >
+        <div className="flex items-center justify-between">
+          <Dots count={steps.length} index={step} onJump={goTo} />
+          <span className="label">Swipe or tap</span>
+        </div>
+        <button
+          onClick={advance}
+          className="w-full h-[54px] rounded-full press body-lg"
+          style={{
+            background: 'var(--grad-warm)',
+            color: 'var(--on-warm)',
+            boxShadow: 'var(--shadow-lg), var(--glow-ember)',
+          }}
+        >
+          {s.cta || (isLast ? 'Begin' : 'Continue')}
+        </button>
         {step < 2 && (
-          <button onClick={() => setStep(3)} className="label draw-underline text-[var(--paper-400)] press self-center">
+          <button onClick={() => goTo(3)} className="label draw-underline text-[var(--paper-400)] press self-center">
             Skip introduction
           </button>
         )}
       </div>
     </main>
+  );
+}
+
+function BackArrow() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

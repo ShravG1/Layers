@@ -2,89 +2,89 @@ import { useState } from 'react';
 import { requestPermission } from '../utils/notifications.js';
 import VocabularyPicker from './VocabularyPicker.jsx';
 import ThemePicker from './ThemePicker.jsx';
+import SwipePager from './SwipePager.jsx';
+import Dots from './Dots.jsx';
 
 export default function Settings({ settings, onChange, onClose, onExport, entriesCount }) {
   const [permission, setPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   );
+  const [page, setPage] = useState(0);
 
   const askPermission = async () => setPermission(await requestPermission());
 
-  return (
-    <main className="min-h-dvh px-5 pt-6 pb-12 anim-ink-fade">
-      <button onClick={onClose} className="label draw-underline text-[var(--paper-200)] press py-2">
-        ← Home
-      </button>
-
-      <header className="mt-5 anim-lift">
-        <div className="label">Settings</div>
-        <h1 className="display-xl mt-3 text-[var(--paper-50)]">Adjust the room</h1>
-      </header>
-
-      <Section title="Summary frequency" delay="delay-100">
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { v: 'weekly', l: 'Weekly' },
-            { v: 'biweekly', l: 'Biweekly' },
-            { v: 'monthly-only', l: 'Monthly' },
-          ].map(opt => {
-            const active = settings.summaryFrequency === opt.v;
-            return (
-              <button
-                key={opt.v}
-                onClick={() => onChange({ summaryFrequency: opt.v })}
-                className="py-3 rounded-[var(--r-md)] press body-md"
-                style={{
-                  background: active ? 'var(--ember-500)' : 'var(--ink-700)',
-                  color: active ? 'var(--on-warm)' : 'var(--paper-200)',
-                  boxShadow: active ? 'var(--shadow-sm), var(--glow-ember)' : 'var(--shadow-sm)',
-                }}
-              >
-                {opt.l}
-              </button>
-            );
-          })}
-        </div>
-        <p className="body-sm mt-3 text-[var(--paper-400)]">
-          Monthly summaries always run, regardless of this setting.
-        </p>
-      </Section>
-
-      <section className="mt-8 anim-lift delay-150">
-        <div className="label mb-2">Appearance</div>
-        <p className="body-sm text-[var(--paper-400)] mb-4">
-          Applies instantly across the whole app.
-        </p>
+  const panels = [
+    // ---- Panel 1: Appearance ----
+    <div key="appearance" className="h-full flex flex-col px-5 overflow-hidden">
+      <div className="label shrink-0">Appearance</div>
+      <p className="body-sm text-[var(--paper-400)] mt-1.5 mb-3 shrink-0">
+        Applies instantly across the whole app.
+      </p>
+      <div className="flex-1 min-h-0">
         <ThemePicker
           value={settings.theme}
           accent={settings.paperAccent}
           onChange={({ theme, accent }) => onChange({ theme, paperAccent: accent })}
           hapticsEnabled={settings.hapticsEnabled}
+          compact
         />
-      </section>
+      </div>
+    </div>,
 
-      <section className="mt-8 anim-lift delay-200">
-        <div className="label mb-2">Rating style</div>
-        <p className="body-sm text-[var(--paper-400)] mb-4">
-          Switching keeps every past entry — only the wording changes.
-        </p>
-        <VocabularyPicker
-          value={settings.vocabulary}
-          onChange={(v) => onChange({ vocabulary: v })}
-          hapticsEnabled={settings.hapticsEnabled}
-        />
-      </section>
+    // ---- Panel 2: Words & rhythm ----
+    <div key="words" className="h-full flex flex-col px-5 overflow-hidden">
+      <div className="label shrink-0">Rating style</div>
+      <p className="body-sm text-[var(--paper-400)] mt-1.5 mb-3 shrink-0">
+        Switching keeps every past entry — only the wording changes.
+      </p>
+      <VocabularyPicker
+        value={settings.vocabulary}
+        onChange={(v) => onChange({ vocabulary: v })}
+        hapticsEnabled={settings.hapticsEnabled}
+      />
+      <div className="label mt-6 mb-3 shrink-0">Summary frequency</div>
+      <div className="grid grid-cols-3 gap-2 shrink-0">
+        {[
+          { v: 'weekly', l: 'Weekly' },
+          { v: 'biweekly', l: 'Biweekly' },
+          { v: 'monthly-only', l: 'Monthly' },
+        ].map(opt => {
+          const active = settings.summaryFrequency === opt.v;
+          return (
+            <button
+              key={opt.v}
+              onClick={() => onChange({ summaryFrequency: opt.v })}
+              className="py-3 rounded-[var(--r-md)] press body-md"
+              style={{
+                background: active ? 'var(--ember-500)' : 'var(--ink-700)',
+                color: active ? 'var(--on-warm)' : 'var(--paper-200)',
+                boxShadow: active ? 'var(--shadow-sm), var(--glow-ember)' : 'var(--shadow-sm)',
+              }}
+            >
+              {opt.l}
+            </button>
+          );
+        })}
+      </div>
+      <p className="body-sm mt-2.5 text-[var(--paper-400)] shrink-0">
+        Monthly summaries always run, regardless of this setting.
+      </p>
+    </div>,
 
-      <Section title="Notification time" delay="delay-200">
+    // ---- Panel 3: Reminders & data ----
+    <div key="reminders" className="h-full flex flex-col px-5 overflow-hidden">
+      <div className="label shrink-0">Reminders</div>
+      <div className="mt-3 surface-card p-5 shrink-0">
+        <div className="body-md text-[var(--paper-50)] mb-2">Notification time</div>
         <input
           type="time"
           value={settings.notificationTime}
           onChange={(e) => onChange({ notificationTime: e.target.value })}
           className="w-full px-4 py-3 body-lg"
-          style={{ colorScheme: 'dark' }}
+          style={{ colorScheme: settings.theme === 'tide' ? 'dark' : 'light' }}
         />
         <p className="body-sm mt-2 text-[var(--paper-400)]">
-          Reminders fire at this time. Weekly and monthly summaries 30 minutes later.
+          Reminders fire at this time. Summaries 30 minutes later.
         </p>
         <Row
           label="Permission"
@@ -99,17 +99,15 @@ export default function Settings({ settings, onChange, onClose, onExport, entrie
             )
           }
         />
-      </Section>
-
-      <Section title="Feel" delay="delay-300">
         <Row
           label="Subtle haptics"
-          hint="Soft vibration when sliders cross a tick"
+          hint="Soft vibration on slider ticks"
           action={<Toggle on={settings.hapticsEnabled} onChange={(v) => onChange({ hapticsEnabled: v })} />}
         />
-      </Section>
+      </div>
 
-      <Section title="Claude API key" hint="Optional · powers the weekly and monthly narratives. Stored only on this device." delay="delay-400">
+      <div className="label mt-6 mb-3 shrink-0">Claude API key</div>
+      <div className="surface-card p-5 shrink-0">
         <input
           type="password"
           value={settings.apiKey}
@@ -118,45 +116,59 @@ export default function Settings({ settings, onChange, onClose, onExport, entrie
           className="w-full px-4 py-3 body-md"
         />
         <p className="body-sm mt-2 text-[var(--paper-400)]">
-          Without a key, a local fallback summariser is used.
+          Optional · powers the narratives. Stored only on this device — a local fallback is used without it.
         </p>
-      </Section>
+      </div>
 
-      <Section title="Your data" delay="delay-500">
-        <p className="body-md text-[var(--paper-200)]">
-          {entriesCount} {entriesCount === 1 ? 'entry' : 'entries'} live only on this device.
-        </p>
+      <div className="mt-6 flex items-center justify-between shrink-0">
+        <div className="label">
+          {entriesCount} {entriesCount === 1 ? 'entry' : 'entries'} · on this device
+        </div>
         <button
           onClick={onExport}
-          className="mt-4 w-full h-12 rounded-full press body-md"
+          className="px-5 h-11 rounded-full press body-md"
           style={{
             background: 'var(--grad-cool)',
             color: 'var(--on-cool)',
             boxShadow: 'var(--shadow-sm), var(--glow-moon)',
           }}
         >
-          Export as JSON
+          Export JSON
         </button>
-      </Section>
+      </div>
+    </div>,
+  ];
 
-      <p className="mt-10 text-center label">Reflection · made for quiet evenings</p>
-    </main>
-  );
-}
-
-function Section({ title, hint, delay, children }) {
   return (
-    <section className={`mt-8 anim-lift ${delay || ''}`}>
-      <div className="label mb-4">{title}</div>
-      {hint && <p className="body-sm text-[var(--paper-400)] -mt-2 mb-4">{hint}</p>}
-      <div className="surface-card p-5">{children}</div>
-    </section>
+    <main className="h-dvh flex flex-col overflow-hidden pt-5 pb-5 anim-ink-fade">
+      <div className="px-5 shrink-0">
+        <button onClick={onClose} aria-label="Back to home"
+                className="label draw-underline text-[var(--paper-200)] press py-1 flex items-center gap-1.5">
+          <BackArrow /> Home
+        </button>
+        <header className="mt-3 anim-lift">
+          <div className="label">Settings</div>
+          <h1 className="display-lg mt-1.5 text-[var(--paper-50)]">Adjust the room</h1>
+        </header>
+      </div>
+
+      <div className="flex-1 min-h-0 mt-4">
+        <SwipePager index={page} count={panels.length} onIndexChange={setPage}>
+          {panels}
+        </SwipePager>
+      </div>
+
+      <div className="shrink-0 flex items-center justify-between px-5 pt-3">
+        <Dots count={panels.length} index={page} onJump={setPage} />
+        <span className="label">Swipe</span>
+      </div>
+    </main>
   );
 }
 
 function Row({ label, hint, action }) {
   return (
-    <div className="flex items-center justify-between gap-4 pt-4 mt-4 border-t border-[var(--ink-600)] first:pt-0 first:mt-0 first:border-t-0">
+    <div className="flex items-center justify-between gap-4 pt-4 mt-4 border-t border-[var(--ink-600)]">
       <div className="min-w-0">
         <div className="body-md text-[var(--paper-50)]">{label}</div>
         {hint && <div className="body-sm text-[var(--paper-400)] mt-0.5">{hint}</div>}
@@ -196,4 +208,13 @@ function permissionText(p) {
   if (p === 'denied') return 'Blocked · enable in browser settings';
   if (p === 'unsupported') return 'Not supported on this device';
   return 'Not yet asked';
+}
+
+function BackArrow() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2.2"
+            strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }

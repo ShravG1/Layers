@@ -27,9 +27,9 @@ const ACCENTS = [
 // "Pick your feel" — three complete design systems. Each preview tile is
 // scoped with its own data-theme attribute, so it renders in that theme
 // regardless of the app's current one.
-export default function ThemePicker({ value, accent, onChange, hapticsEnabled = true }) {
+export default function ThemePicker({ value, accent, onChange, hapticsEnabled = true, compact = false }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`flex flex-col ${compact ? 'gap-2' : 'gap-3'}`}>
       {THEMES.map(theme => {
         const selected = value === theme.key;
         return (
@@ -37,16 +37,31 @@ export default function ThemePicker({ value, accent, onChange, hapticsEnabled = 
             <button
               type="button"
               onClick={() => { onChange({ theme: theme.key, accent }); tapLight(hapticsEnabled); }}
-              className={`w-full text-left surface-card p-4 press ${selected ? 'rail-ember' : ''}`}
+              className={`w-full text-left surface-card press ${compact ? 'p-3' : 'p-4'} ${selected ? 'rail-ember' : ''}`}
               style={selected ? { boxShadow: 'var(--shadow-md), var(--glow-ember), inset 4px 0 0 var(--ember-500)' } : undefined}
               aria-pressed={selected}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="display-sm text-[var(--paper-50)]">{theme.name}</div>
-                <Tick on={selected} />
-              </div>
-              <ThemeMock theme={theme.key} accent={accent} />
-              <p className="body-sm text-[var(--paper-400)] mt-3">{theme.blurb}</p>
+              {compact ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-[92px] shrink-0"><ThemeMock theme={theme.key} accent={accent} compact /></div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <div className="display-sm text-[var(--paper-50)]">{theme.name}</div>
+                      <Tick on={selected} />
+                    </div>
+                    <p className="body-sm text-[var(--paper-400)] mt-1 leading-snug">{theme.blurb}</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="display-sm text-[var(--paper-50)]">{theme.name}</div>
+                    <Tick on={selected} />
+                  </div>
+                  <ThemeMock theme={theme.key} accent={accent} />
+                  <p className="body-sm text-[var(--paper-400)] mt-3">{theme.blurb}</p>
+                </>
+              )}
             </button>
 
             {theme.key === 'paper' && selected && (
@@ -91,7 +106,33 @@ export default function ThemePicker({ value, accent, onChange, hapticsEnabled = 
 }
 
 // A miniature of the home + daily screens, scoped to a theme.
-function ThemeMock({ theme, accent }) {
+function ThemeMock({ theme, accent, compact = false }) {
+  if (compact) {
+    return (
+      <div
+        data-theme={theme}
+        data-accent={accent}
+        className="rounded-[12px] p-2"
+        style={{ background: 'var(--ink-900)' }}
+      >
+        <div className="rounded-[8px] p-2" style={{ background: 'var(--ink-800)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="flex gap-1">
+            {[1, 1, 0].map((on, i) => (
+              <span key={i} className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: on ? 'var(--ember-500)' : 'transparent',
+                             border: on ? 'none' : '1px solid var(--paper-400)' }} />
+            ))}
+          </div>
+          <div className="mt-1.5 rounded-[5px] p-1.5"
+               style={{ background: 'var(--ink-700)', boxShadow: 'inset 3px 0 0 var(--ember-500)' }}>
+            <div className="h-1.5 w-8 rounded-full" style={{ background: 'var(--paper-200)' }} />
+          </div>
+          <div className="w-full h-1.5 rounded-full mt-1.5"
+               style={{ background: 'linear-gradient(90deg, var(--ember-700), var(--sage-500))' }} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       data-theme={theme}
