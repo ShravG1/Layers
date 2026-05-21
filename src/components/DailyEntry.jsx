@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import VoiceCapture from './VoiceCapture.jsx';
 import FeelingSlider from './FeelingSlider.jsx';
-import { MOOD_LABELS, STRESS_LABELS } from '../utils/labels.js';
 import { formatDate, todayKey } from '../utils/dates.js';
 import { celebrate } from '../utils/haptics.js';
+import { useLabels } from '../utils/labelsContext.js';
 
 export default function DailyEntry({ targetDate, onSave, onCancel, hapticsEnabled = true, existing, entryCount }) {
+  const labels = useLabels();
   const date = targetDate || todayKey();
   const isBackfill = date !== todayKey();
 
@@ -74,7 +75,7 @@ export default function DailyEntry({ targetDate, onSave, onCancel, hapticsEnable
       <div className="mt-12 anim-lift delay-200">
         <div className="label mb-4">Mood</div>
         <FeelingSlider
-          labels={MOOD_LABELS}
+          labels={labels.mood}
           value={mood}
           onChange={setMood}
           variant="mood"
@@ -85,7 +86,7 @@ export default function DailyEntry({ targetDate, onSave, onCancel, hapticsEnable
       <div className="mt-10 anim-lift delay-300">
         <div className="label mb-4">Stress</div>
         <FeelingSlider
-          labels={STRESS_LABELS}
+          labels={labels.stress}
           value={stress}
           onChange={setStress}
           variant="stress"
@@ -98,7 +99,7 @@ export default function DailyEntry({ targetDate, onSave, onCancel, hapticsEnable
         className="fixed left-0 right-0 bottom-0 px-5 pt-4 pb-6"
         style={{
           paddingBottom: `calc(env(safe-area-inset-bottom) + 16px)`,
-          background: 'linear-gradient(180deg, rgba(14,17,23,0) 0%, var(--ink-900) 35%)',
+          background: 'linear-gradient(180deg, transparent 0%, var(--ink-900) 35%)',
         }}
       >
         <button
@@ -110,8 +111,8 @@ export default function DailyEntry({ targetDate, onSave, onCancel, hapticsEnable
                       h-[60px] display-md
                       ${saving ? 'opacity-80' : ''}`}
           style={{
-            background: 'linear-gradient(180deg, #F4B98A 0%, #E8894A 60%, #B45F2A 100%)',
-            color: '#1A0F08',
+            background: 'var(--grad-warm)',
+            color: 'var(--on-warm)',
             boxShadow: 'var(--shadow-lg), var(--glow-ember)',
             fontSize: '20px',
           }}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Home from './components/Home.jsx';
 import DailyEntry from './components/DailyEntry.jsx';
 import WeeklySummary from './components/WeeklySummary.jsx';
@@ -10,11 +10,31 @@ import { useReflection } from './hooks/useReflection.js';
 import { storage } from './utils/storage.js';
 import { startScheduler } from './utils/notifications.js';
 import { todayKey, yesterdayKey } from './utils/dates.js';
+import { vocabFor } from './utils/labels.js';
+import { LabelsContext } from './utils/labelsContext.js';
 
 export default function App() {
   const r = useReflection();
   const [view, setView] = useState({ name: 'home' });
   const [onboarded, setOnboarded] = useState(() => storage.loadOnboarded());
+
+  // Apply the chosen theme to <html> so the whole document — including the
+  // status bar tint — responds instantly when the user switches.
+  useEffect(() => {
+    const el = document.documentElement;
+    el.setAttribute('data-theme', r.settings.theme || 'garden');
+    el.setAttribute('data-accent', r.settings.paperAccent || 'rust');
+    const themeColor = getComputedStyle(el).getPropertyValue('--ink-900').trim();
+    if (themeColor) {
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor);
+    }
+  }, [r.settings.theme, r.settings.paperAccent]);
+
+  // Active vocabulary — supplied to every component via context.
+  const activeLabels = useMemo(() => {
+    const v = vocabFor(r.settings.vocabulary);
+    return { mood: v.mood, stress: v.stress };
+  }, [r.settings.vocabulary]);
 
   // Route changes use the View Transitions API where supported,
   // falling back to a plain set otherwise. Matches the ink-fade language.
@@ -55,10 +75,14 @@ export default function App() {
   let screen;
   if (!onboarded) {
     screen = (
-      <Onboarding onDone={() => {
-        storage.saveOnboarded(true);
-        setOnboarded(true);
-      }} />
+      <Onboarding
+        settings={r.settings}
+        onChange={r.updateSettings}
+        onDone={() => {
+          storage.saveOnboarded(true);
+          setOnboarded(true);
+        }}
+      />
     );
   } else if (view.name === 'entry') {
     screen = (
@@ -122,9 +146,9 @@ export default function App() {
   }
 
   return (
-    <>
+    <LabelsContext.Provider value={activeLabels}>
       <Grain />
       <div className="app-shell">{screen}</div>
-    </>
+    </LabelsContext.Provider>
   );
 }

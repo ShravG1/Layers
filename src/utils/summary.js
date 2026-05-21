@@ -8,12 +8,14 @@ import { formatDate } from './dates.js';
 const CLAUDE_MODEL = 'claude-opus-4-5';
 const CLAUDE_URL = 'https://api.anthropic.com/v1/messages';
 
-function buildPrompt(entries, kind, userReflection) {
+const DEFAULT_LABELS = { mood: MOOD_LABELS, stress: STRESS_LABELS };
+
+function buildPrompt(entries, kind, userReflection, labels) {
   const lines = entries
     .filter(e => e)
     .map(e => {
-      const mood = labelForValue(MOOD_LABELS, e.mood).label;
-      const stress = labelForValue(STRESS_LABELS, e.stress).label;
+      const mood = labelForValue(labels.mood, e.mood).label;
+      const stress = labelForValue(labels.stress, e.stress).label;
       const transcript = (e.transcript || '').trim();
       return `- ${formatDate(e.date, { weekday: 'short' })} — mood: ${mood}, stress: ${stress}${transcript ? ` — "${transcript.slice(0, 600)}"` : ' — (no note)'}`;
     })
@@ -34,8 +36,9 @@ Their daily entries:
 ${lines}`;
 }
 
-export async function generateSummary({ apiKey, entries, kind, userReflection }) {
-  if (!apiKey) return localSummary(entries, kind, userReflection);
+export async function generateSummary({ apiKey, entries, kind, userReflection, labels }) {
+  const vocab = labels || DEFAULT_LABELS;
+  if (!apiKey) return localSummary(entries, kind, userReflection, vocab);
 
   try {
     const res = await fetch(CLAUDE_URL, {
@@ -49,7 +52,7 @@ export async function generateSummary({ apiKey, entries, kind, userReflection })
       body: JSON.stringify({
         model: CLAUDE_MODEL,
         max_tokens: 800,
-        messages: [{ role: 'user', content: buildPrompt(entries, kind, userReflection) }],
+        messages: [{ role: 'user', content: buildPrompt(entries, kind, userReflection, vocab) }],
       }),
     });
     if (!res.ok) throw new Error(`Claude API ${res.status}`);
@@ -59,11 +62,11 @@ export async function generateSummary({ apiKey, entries, kind, userReflection })
     return text;
   } catch (err) {
     console.warn('Falling back to local summary:', err);
-    return localSummary(entries, kind, userReflection);
+    return localSummary(entries, kind, userReflection, vocab);
   }
 }
 
-function localSummary(entries, kind, userReflection) {
+function localSummary(entries, kind, userReflection, labels = DEFAULT_LABELS) {
   const period = kind === 'weekly' ? 'this week' : kind === 'biweekly' ? 'this fortnight' : 'this month';
   const filled = entries.filter(e => e);
   if (filled.length === 0) {
@@ -71,8 +74,8 @@ function localSummary(entries, kind, userReflection) {
   }
   const avgMood = filled.reduce((s, e) => s + e.mood, 0) / filled.length;
   const avgStress = filled.reduce((s, e) => s + e.stress, 0) / filled.length;
-  const moodLabel = labelForValue(MOOD_LABELS, Math.round(avgMood)).label;
-  const stressLabel = labelForValue(STRESS_LABELS, Math.round(avgStress)).label;
+  const moodLabel = labelForValue(labels.mood, Math.round(avgMood)).label;
+  const stressLabel = labelForValue(labels.stress, Math.round(avgStress)).label;
 
   const best = filled.reduce((b, e) => (e.mood > b.mood ? e : b), filled[0]);
   const hardest = filled.reduce((b, e) => (e.mood < b.mood ? e : b), filled[0]);

@@ -24,12 +24,16 @@ export const storage = {
   saveEntries(entries) { write(KEY_ENTRIES, entries); },
 
   loadSettings() {
-    return read(KEY_SETTINGS, {
+    const defaults = {
       summaryFrequency: 'weekly', // 'weekly' | 'biweekly' | 'monthly-only'
       notificationTime: '22:00',
       apiKey: '',
       hapticsEnabled: true,
-    });
+      vocabulary: 'classic',      // 'classic' | 'plain' | 'soft'
+      theme: 'garden',            // 'garden' | 'tide' | 'paper'
+      paperAccent: 'rust',        // 'rust' | 'olive' | 'plum' — used by the Paper theme
+    };
+    return { ...defaults, ...read(KEY_SETTINGS, {}) };
   },
   saveSettings(s) { write(KEY_SETTINGS, s); },
 

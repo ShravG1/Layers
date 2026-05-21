@@ -1,8 +1,33 @@
 // Feeling labels. The user sees only the word; we store a 1-10 value.
-// Five labels span 1-10: positions map to centres of equal bands.
+// Three vocabulary sets — the underlying 1-10 mapping stays constant so
+// historical charts remain accurate when the user switches.
 
-export const MOOD_LABELS = ['Awful', 'Poor', 'Neutral', 'Good', 'Excellent'];
-export const STRESS_LABELS = ['Peaceful', 'Calm', 'Balanced', 'Tense', 'Overwhelmed'];
+export const VOCAB_SETS = {
+  classic: {
+    label: 'Classic',
+    mood:   ['Awful', 'Poor', 'Neutral', 'Good', 'Excellent'],
+    stress: ['Peaceful', 'Calm', 'Balanced', 'Tense', 'Overwhelmed'],
+  },
+  plain: {
+    label: 'Plain',
+    mood:   ['Terrible', 'Low', 'Okay', 'Happy', 'Great'],
+    stress: ['Relaxed', 'Settled', 'Steady', 'Stressed', 'Maxed Out'],
+  },
+  soft: {
+    label: 'Soft',
+    mood:   ['Heavy', 'Flat', 'Steady', 'Bright', 'Glowing'],
+    stress: ['Still', 'Easy', 'Holding', 'Stretched', 'Frayed'],
+  },
+};
+
+export function vocabFor(key) {
+  return VOCAB_SETS[key] || VOCAB_SETS.classic;
+}
+
+// Backwards-compat exports (default to Classic). New code should prefer
+// reading from the LabelsContext so labels respond to user preference.
+export const MOOD_LABELS = VOCAB_SETS.classic.mood;
+export const STRESS_LABELS = VOCAB_SETS.classic.stress;
 
 // Map slider position 0..1 → 1..10 (continuous storage value).
 export function positionToValue(pos) {

@@ -1,55 +1,122 @@
 /* ============================================================
    Reflection — design tokens
-   After-dark editorial. Nocturnal palette, candlelight text,
-   ember + moon as duelling accents.
+
+   Three complete themes, swapped via [data-theme] on <html>:
+     garden — warm creams, dusty sage, terracotta (default)
+     tide   — deep navy, slate blues, pale sand
+     paper  — off-white, charcoal, one accent (rust|olive|plum)
+
+   Colour variables keep neutral role names:
+     --ink-*   background tones (lower number = deeper surface)
+     --paper-* text tones       (lower number = more prominent)
+     --ember-* primary accent (warm)
+     --moon-*  secondary accent (cool)
+     --sage-*  slider gradient partner
    ============================================================ */
 
+/* ---------- Theme-invariant tokens ---------- */
 :root {
-  /* Base — dusk */
-  --ink-900: #0E1117;
-  --ink-800: #161B23;
-  --ink-700: #1F2731;
-  --ink-600: #2B3340;
-
-  /* Paper — text + warmth */
-  --paper-50:  #F5EDDF;
-  --paper-200: #DFD3BE;
-  --paper-400: #A89A82;
-
-  /* Ember — primary accent */
-  --ember-300: #F4B98A;
-  --ember-500: #E8894A;
-  --ember-700: #B45F2A;
-
-  /* Moon — secondary accent */
-  --moon-300: #B8C7DE;
-  --moon-500: #7B91B0;
-  --moon-700: #4D6280;
-
-  /* Sage — mood-only, restrained */
-  --sage-500: #6B8268;
-
-  /* Type */
-  --font-display: 'Fraunces Variable', 'Times New Roman', serif;
-  --font-body:    'Inter Variable', system-ui, -apple-system, sans-serif;
-
-  /* Radii */
   --r-sm: 10px;
   --r-md: 18px;
   --r-lg: 28px;
   --r-pill: 999px;
 
-  /* Spacing */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;  --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px;  --space-8: 64px;
 
-  /* Shadows — every elevation has at least two layers */
+  --ease-out-soft:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-warm: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ============================================================
+   GARDEN — default. Kitchen-table journaling, unhurried.
+   ============================================================ */
+:root,
+[data-theme="garden"] {
+  --ink-900: #EDE3CF;  /* page base */
+  --ink-800: #FBF6EC;  /* card */
+  --ink-700: #FFFDF7;  /* raised card */
+  --ink-600: #D8C9A8;  /* divider */
+
+  --paper-50:  #2E2A22;
+  --paper-200: #5A5446;
+  --paper-400: #8A7F6A;
+
+  --ember-300: #E6B595;
+  --ember-500: #C16B47;
+  --ember-700: #97492C;
+
+  --moon-300: #BCC9B1;
+  --moon-500: #84997C;
+  --moon-700: #57694F;
+
+  --sage-500: #84997C;
+
+  --note-bg:  #FFFDF7;
+  --note-ink: #2E2A22;
+
+  --font-display: 'Fraunces Variable', 'Times New Roman', serif;
+  --font-body:    'Inter Variable', system-ui, -apple-system, sans-serif;
+  --display-soft: 70;        /* SOFT axis — rounded warmth */
+  --body-line: 1.5;
+
+  --shadow-sm: 0 1px 2px rgba(74,58,34,0.08),
+               0 0 0 1px rgba(74,58,34,0.04) inset;
+  --shadow-md: 0 1px 3px rgba(74,58,34,0.08),
+               0 6px 18px rgba(74,58,34,0.10),
+               0 0 0 1px rgba(74,58,34,0.04) inset;
+  --shadow-lg: 0 2px 6px rgba(74,58,34,0.10),
+               0 18px 36px rgba(74,58,34,0.14),
+               0 0 0 1px rgba(74,58,34,0.05) inset;
+  --shadow-xl: 0 4px 10px rgba(74,58,34,0.12),
+               0 28px 56px rgba(74,58,34,0.18),
+               0 0 0 1px rgba(74,58,34,0.06) inset;
+
+  --glow-ember: 0 0 42px rgba(193,107,71,0.20);
+  --glow-moon:  0 0 42px rgba(132,153,124,0.20);
+
+  --grad-warm: linear-gradient(180deg, #E6B595 0%, #C16B47 60%, #97492C 100%);
+  --grad-cool: linear-gradient(180deg, #BCC9B1 0%, #84997C 60%, #57694F 100%);
+  --on-warm: #FBF6EC;
+  --on-cool: #FBF6EC;
+
+  --grain-opacity: 0.05;
+  --grain-blend: multiply;
+}
+
+/* ============================================================
+   TIDE — writing by the sea at dusk. Cool, fluid, monochrome.
+   ============================================================ */
+[data-theme="tide"] {
+  --ink-900: #0C1A2E;
+  --ink-800: #142536;
+  --ink-700: #1E3247;
+  --ink-600: #2C4359;
+
+  --paper-50:  #E9DFC8;
+  --paper-200: #C3BAA2;
+  --paper-400: #8A8676;
+
+  /* Blue throughout — both accents are cool slates */
+  --ember-300: #AFC4DC;
+  --ember-500: #7C9BBE;
+  --ember-700: #4F7196;
+
+  --moon-300: #9DB6CE;
+  --moon-500: #6E8BAC;
+  --moon-700: #46658A;
+
+  --sage-500: #7C9BBE;
+
+  --note-bg:  #E9DFC8;
+  --note-ink: #0C1A2E;
+
+  --font-display: 'Inter Variable', system-ui, sans-serif;
+  --font-body:    'Inter Variable', system-ui, -apple-system, sans-serif;
+  --display-soft: 0;
+  --body-line: 1.5;
+
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.4),
                0 0 0 1px rgba(255,255,255,0.03) inset;
   --shadow-md: 0 2px 4px rgba(0,0,0,0.4),
@@ -62,13 +129,86 @@
                0 36px 72px rgba(0,0,0,0.55),
                0 0 0 1px rgba(255,255,255,0.06) inset;
 
-  --glow-ember: 0 0 48px rgba(232,137,74,0.18);
-  --glow-moon:  0 0 48px rgba(123,145,176,0.16);
+  --glow-ember: 0 0 48px rgba(124,155,190,0.22);
+  --glow-moon:  0 0 48px rgba(110,139,172,0.20);
 
-  /* Easing curves */
-  --ease-out-soft:    cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-in-out-warm: cubic-bezier(0.65, 0, 0.35, 1);
+  --grad-warm: linear-gradient(180deg, #AFC4DC 0%, #7C9BBE 60%, #4F7196 100%);
+  --grad-cool: linear-gradient(180deg, #9DB6CE 0%, #6E8BAC 60%, #46658A 100%);
+  --on-warm: #0C1A2E;
+  --on-cool: #0C1A2E;
+
+  --grain-opacity: 0.06;
+  --grain-blend: overlay;
+}
+
+/* ============================================================
+   PAPER — a private notebook. Quiet, serif, one accent.
+   ============================================================ */
+[data-theme="paper"] {
+  --ink-900: #F7F3EA;
+  --ink-800: #FCFAF3;
+  --ink-700: #FFFFFF;
+  --ink-600: #E2DACA;
+
+  --paper-50:  #2A2722;
+  --paper-200: #544F46;
+  --paper-400: #8C8474;
+
+  --note-bg:  #FFFFFF;
+  --note-ink: #2A2722;
+
+  --font-display: 'Fraunces Variable', 'Times New Roman', serif;
+  --font-body:    'Fraunces Variable', 'Times New Roman', serif;
+  --display-soft: 30;
+  --body-line: 1.7;
+
+  --shadow-sm: 0 1px 2px rgba(50,42,30,0.06),
+               0 0 0 1px rgba(50,42,30,0.05) inset;
+  --shadow-md: 0 1px 2px rgba(50,42,30,0.06),
+               0 4px 12px rgba(50,42,30,0.07),
+               0 0 0 1px rgba(50,42,30,0.05) inset;
+  --shadow-lg: 0 1px 3px rgba(50,42,30,0.07),
+               0 10px 24px rgba(50,42,30,0.09),
+               0 0 0 1px rgba(50,42,30,0.06) inset;
+  --shadow-xl: 0 2px 6px rgba(50,42,30,0.09),
+               0 18px 36px rgba(50,42,30,0.12),
+               0 0 0 1px rgba(50,42,30,0.07) inset;
+
+  --grain-opacity: 0.04;
+  --grain-blend: multiply;
+}
+
+/* Paper accent — a single colour used for warm + cool roles */
+[data-theme="paper"][data-accent="rust"] {
+  --ember-300: #D6A38C; --ember-500: #B05C3D; --ember-700: #8A4329;
+  --moon-300:  #D6A38C; --moon-500:  #B05C3D; --moon-700:  #8A4329;
+  --sage-500:  #B05C3D;
+  --glow-ember: 0 0 36px rgba(176,92,61,0.16);
+  --glow-moon:  0 0 36px rgba(176,92,61,0.16);
+  --grad-warm: linear-gradient(180deg, #D6A38C 0%, #B05C3D 60%, #8A4329 100%);
+  --grad-cool: linear-gradient(180deg, #D6A38C 0%, #B05C3D 60%, #8A4329 100%);
+}
+[data-theme="paper"][data-accent="olive"] {
+  --ember-300: #B4BC8E; --ember-500: #6E7B3F; --ember-700: #535D2D;
+  --moon-300:  #B4BC8E; --moon-500:  #6E7B3F; --moon-700:  #535D2D;
+  --sage-500:  #6E7B3F;
+  --glow-ember: 0 0 36px rgba(110,123,63,0.16);
+  --glow-moon:  0 0 36px rgba(110,123,63,0.16);
+  --grad-warm: linear-gradient(180deg, #B4BC8E 0%, #6E7B3F 60%, #535D2D 100%);
+  --grad-cool: linear-gradient(180deg, #B4BC8E 0%, #6E7B3F 60%, #535D2D 100%);
+}
+[data-theme="paper"][data-accent="plum"] {
+  --ember-300: #C0A0B6; --ember-500: #7E4E6E; --ember-700: #5E3852;
+  --moon-300:  #C0A0B6; --moon-500:  #7E4E6E; --moon-700:  #5E3852;
+  --sage-500:  #7E4E6E;
+  --glow-ember: 0 0 36px rgba(126,78,110,0.16);
+  --glow-moon:  0 0 36px rgba(126,78,110,0.16);
+  --grad-warm: linear-gradient(180deg, #C0A0B6 0%, #7E4E6E 60%, #5E3852 100%);
+  --grad-cool: linear-gradient(180deg, #C0A0B6 0%, #7E4E6E 60%, #5E3852 100%);
+}
+[data-theme="paper"] {
+  --on-warm: #FFFFFF;
+  --on-cool: #FFFFFF;
 }
 
 /* ---------- Type ramp ---------- */
@@ -79,7 +219,7 @@
   font-size: 56px;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  font-variation-settings: 'opsz' 96, 'SOFT' 80;
+  font-variation-settings: 'opsz' 96, 'SOFT' var(--display-soft, 0);
 }
 .display-lg {
   font-family: var(--font-display);
@@ -87,7 +227,7 @@
   font-size: 40px;
   line-height: 1.08;
   letter-spacing: -0.015em;
-  font-variation-settings: 'opsz' 72, 'SOFT' 60;
+  font-variation-settings: 'opsz' 72, 'SOFT' var(--display-soft, 0);
 }
 .display-md {
   font-family: var(--font-display);
@@ -95,25 +235,25 @@
   font-size: 28px;
   line-height: 1.15;
   letter-spacing: -0.01em;
-  font-variation-settings: 'opsz' 48, 'SOFT' 40;
+  font-variation-settings: 'opsz' 48, 'SOFT' var(--display-soft, 0);
 }
 .display-sm {
   font-family: var(--font-display);
   font-weight: 500;
   font-size: 22px;
   line-height: 1.2;
-  font-variation-settings: 'opsz' 32, 'SOFT' 30;
+  font-variation-settings: 'opsz' 32, 'SOFT' var(--display-soft, 0);
 }
 .display-italic {
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 400;
-  font-variation-settings: 'opsz' 24, 'SOFT' 50;
+  font-variation-settings: 'opsz' 24, 'SOFT' var(--display-soft, 0);
 }
 
-.body-lg { font: 400 17px/1.5 var(--font-body); }
-.body-md { font: 400 15px/1.5 var(--font-body); }
-.body-sm { font: 400 13px/1.45 var(--font-body); }
+.body-lg { font: 400 17px/var(--body-line) var(--font-body); }
+.body-md { font: 400 15px/var(--body-line) var(--font-body); }
+.body-sm { font-family: var(--font-body); font-weight: 400; font-size: 13px; line-height: 1.45; }
 
 .label {
   font-family: var(--font-body);
@@ -140,23 +280,21 @@
 .surface-sunken {
   background: var(--ink-900);
   border-radius: var(--r-md);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset,
-              0 2px 6px rgba(0,0,0,0.4) inset;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.05) inset,
+              0 2px 6px rgba(0,0,0,0.10) inset;
 }
 
-/* Left edge accent rail */
 .rail-ember { box-shadow: var(--shadow-md), inset 4px 0 0 var(--ember-500); }
 .rail-moon  { box-shadow: var(--shadow-md), inset 4px 0 0 var(--moon-500); }
 
-/* ---------- Folded-note treatment (backfill banner) ---------- */
+/* ---------- Folded-note (backfill banner) ---------- */
 
 .folded-note {
-  background: var(--paper-50);
-  color: var(--ink-900);
+  background: var(--note-bg);
+  color: var(--note-ink);
   border-radius: var(--r-md);
   transform: rotate(-0.5deg);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3),
-              0 16px 32px rgba(0,0,0,0.4);
+  box-shadow: var(--shadow-lg);
   position: relative;
 }
 .folded-note::before {

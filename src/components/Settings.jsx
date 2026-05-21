@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { requestPermission } from '../utils/notifications.js';
+import VocabularyPicker from './VocabularyPicker.jsx';
+import ThemePicker from './ThemePicker.jsx';
 
 export default function Settings({ settings, onChange, onClose, onExport, entriesCount }) {
   const [permission, setPermission] = useState(
@@ -34,7 +36,7 @@ export default function Settings({ settings, onChange, onClose, onExport, entrie
                 className="py-3 rounded-[var(--r-md)] press body-md"
                 style={{
                   background: active ? 'var(--ember-500)' : 'var(--ink-700)',
-                  color: active ? '#1A0F08' : 'var(--paper-200)',
+                  color: active ? 'var(--on-warm)' : 'var(--paper-200)',
                   boxShadow: active ? 'var(--shadow-sm), var(--glow-ember)' : 'var(--shadow-sm)',
                 }}
               >
@@ -47,6 +49,31 @@ export default function Settings({ settings, onChange, onClose, onExport, entrie
           Monthly summaries always run, regardless of this setting.
         </p>
       </Section>
+
+      <section className="mt-8 anim-lift delay-150">
+        <div className="label mb-2">Appearance</div>
+        <p className="body-sm text-[var(--paper-400)] mb-4">
+          Applies instantly across the whole app.
+        </p>
+        <ThemePicker
+          value={settings.theme}
+          accent={settings.paperAccent}
+          onChange={({ theme, accent }) => onChange({ theme, paperAccent: accent })}
+          hapticsEnabled={settings.hapticsEnabled}
+        />
+      </section>
+
+      <section className="mt-8 anim-lift delay-200">
+        <div className="label mb-2">Rating style</div>
+        <p className="body-sm text-[var(--paper-400)] mb-4">
+          Switching keeps every past entry — only the wording changes.
+        </p>
+        <VocabularyPicker
+          value={settings.vocabulary}
+          onChange={(v) => onChange({ vocabulary: v })}
+          hapticsEnabled={settings.hapticsEnabled}
+        />
+      </section>
 
       <Section title="Notification time" delay="delay-200">
         <input
@@ -66,7 +93,7 @@ export default function Settings({ settings, onChange, onClose, onExport, entrie
             permission === 'default' && (
               <button onClick={askPermission}
                 className="px-4 py-2 rounded-[var(--r-md)] press body-md"
-                style={{ background: 'var(--ember-500)', color: '#1A0F08', boxShadow: 'var(--shadow-sm)' }}>
+                style={{ background: 'var(--ember-500)', color: 'var(--on-warm)', boxShadow: 'var(--shadow-sm)' }}>
                 Enable
               </button>
             )
@@ -103,8 +130,8 @@ export default function Settings({ settings, onChange, onClose, onExport, entrie
           onClick={onExport}
           className="mt-4 w-full h-12 rounded-full press body-md"
           style={{
-            background: 'linear-gradient(180deg, #B8C7DE 0%, #7B91B0 60%, #4D6280 100%)',
-            color: '#0E1117',
+            background: 'var(--grad-cool)',
+            color: 'var(--on-cool)',
             boxShadow: 'var(--shadow-sm), var(--glow-moon)',
           }}
         >

@@ -23,7 +23,7 @@ function MoonGlyph() {
     <svg width="20" height="20" viewBox="0 0 24 24" className="mt-1 shrink-0" aria-hidden>
       <path
         d="M16.5 14.5A8.5 8.5 0 0 1 9.5 4 8 8 0 1 0 20 14.5a8.6 8.6 0 0 1-3.5 0Z"
-        fill="#0E1117"
+        fill="var(--note-ink)"
         opacity="0.85"
       />
     </svg>

@@ -92,7 +92,7 @@ export default function VoiceCapture({
               aria-hidden
               className="absolute inset-0 rounded-full anim-breathe-glow"
               style={{
-                background: 'radial-gradient(circle, rgba(232,137,74,0.45) 0%, rgba(232,137,74,0) 65%)',
+                background: 'radial-gradient(circle, color-mix(in srgb, var(--ember-500) 45%, transparent) 0%, transparent 65%)',
               }}
             />
             <button
@@ -108,11 +108,11 @@ export default function VoiceCapture({
                           ${recording ? '' : 'anim-breathe'}`}
               style={{
                 background: recording
-                  ? 'radial-gradient(circle at 50% 45%, #E8894A 0%, #B45F2A 80%)'
-                  : 'radial-gradient(circle at 50% 45%, #1F2731 0%, #161B23 80%)',
+                  ? 'radial-gradient(circle at 50% 45%, var(--ember-500) 0%, var(--ember-700) 80%)'
+                  : 'radial-gradient(circle at 50% 45%, var(--ink-700) 0%, var(--ink-800) 80%)',
                 boxShadow: recording
-                  ? 'var(--shadow-lg), 0 0 80px rgba(232,137,74,0.45)'
-                  : 'var(--shadow-md), 0 0 32px rgba(232,137,74,0.2)',
+                  ? 'var(--shadow-lg), 0 0 80px color-mix(in srgb, var(--ember-500) 45%, transparent)'
+                  : 'var(--shadow-md), 0 0 32px color-mix(in srgb, var(--ember-500) 20%, transparent)',
               }}
             >
               {recording ? <RecordDot /> : <MicGlyph />}
@@ -186,14 +186,15 @@ export default function VoiceCapture({
 
 function MicGlyph() {
   return (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="9" y="3" width="6" height="12" rx="3" stroke="#F5EDDF" strokeWidth="1.6" />
-      <path d="M5 11a7 7 0 0 0 14 0" stroke="#F5EDDF" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M12 18v3" stroke="#F5EDDF" strokeWidth="1.6" strokeLinecap="round" />
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden
+         style={{ color: 'var(--paper-50)' }}>
+      <rect x="9" y="3" width="6" height="12" rx="3" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M12 18v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
 
 function RecordDot() {
-  return <span className="w-4 h-4 rounded-sm bg-[var(--paper-50)]" />;
+  return <span className="w-4 h-4 rounded-sm" style={{ background: 'var(--on-warm)' }} />;
 }

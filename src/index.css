@@ -39,7 +39,7 @@
   ::selection { background: var(--ember-700); color: var(--paper-50); }
 }
 
-/* ---------- Grain overlay — paper feel on dark surfaces ---------- */
+/* ---------- Grain overlay — paper feel on every surface ---------- */
 
 .grain {
   position: fixed;
@@ -47,8 +47,8 @@
   z-index: 1;
   pointer-events: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  mix-blend-mode: overlay;
-  opacity: 0.06;
+  mix-blend-mode: var(--grain-blend, overlay);
+  opacity: var(--grain-opacity, 0.06);
 }
 
 /* Ensure interactive content sits above the grain */

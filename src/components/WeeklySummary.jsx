@@ -5,9 +5,11 @@ import SkeletonSummary from './SkeletonSummary.jsx';
 import EntryCard from './EntryCard.jsx';
 import { lastNDaysKeys, formatDayShort, formatDate } from '../utils/dates.js';
 import { findHighlights, generateSummary, recurringThemes } from '../utils/summary.js';
-import { labelForValue, MOOD_LABELS, STRESS_LABELS } from '../utils/labels.js';
+import { labelForValue } from '../utils/labels.js';
+import { useLabels } from '../utils/labelsContext.js';
 
 export default function WeeklySummary({ entries, apiKey, kind = 'weekly', hapticsEnabled, onClose }) {
+  const labels = useLabels();
   const days = kind === 'biweekly' ? 14 : 7;
   const keys = useMemo(() => lastNDaysKeys(days), [days]);
   const period = useMemo(() => keys.map(k => entries[k] || null), [keys, entries]);
@@ -20,7 +22,7 @@ export default function WeeklySummary({ entries, apiKey, kind = 'weekly', haptic
   useEffect(() => {
     let active = true;
     (async () => {
-      const text = await generateSummary({ apiKey, entries: present, kind });
+      const text = await generateSummary({ apiKey, entries: present, kind, labels });
       if (active) { setSummary(text); setLoading(false); }
     })();
     return () => { active = false; };
@@ -103,15 +105,15 @@ export default function WeeklySummary({ entries, apiKey, kind = 'weekly', haptic
           type="button"
           onClick={() => {
             setLoading(true);
-            generateSummary({ apiKey, entries: present, kind, userReflection: reflection })
+            generateSummary({ apiKey, entries: present, kind, userReflection: reflection, labels })
               .then(text => { setSummary(text); setLoading(false); });
           }}
           disabled={!reflection.trim() || loading}
           className={`mt-5 w-full h-[52px] rounded-full press body-lg
                       ${(!reflection.trim() || loading) ? 'opacity-50' : ''}`}
           style={{
-            background: 'linear-gradient(180deg, #B8C7DE 0%, #7B91B0 60%, #4D6280 100%)',
-            color: '#0E1117',
+            background: 'var(--grad-cool)',
+            color: 'var(--on-cool)',
             boxShadow: 'var(--shadow-md), var(--glow-moon)',
           }}
         >
@@ -150,6 +152,7 @@ function NarrativeReveal({ text }) {
 }
 
 function Highlight({ title, entry, tone }) {
+  const labels = useLabels();
   const rail = tone === 'ember' ? 'rail-ember' : 'rail-moon';
   if (!entry) {
     return (
@@ -159,8 +162,8 @@ function Highlight({ title, entry, tone }) {
       </div>
     );
   }
-  const moodLabel = labelForValue(MOOD_LABELS, entry.mood).label;
-  const stressLabel = labelForValue(STRESS_LABELS, entry.stress).label;
+  const moodLabel = labelForValue(labels.mood, entry.mood).label;
+  const stressLabel = labelForValue(labels.stress, entry.stress).label;
   return (
     <div className={`surface-card ${rail} p-4`}>
       <div className="label">{title}</div>

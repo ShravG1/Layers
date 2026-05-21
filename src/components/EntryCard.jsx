@@ -1,7 +1,9 @@
-import { labelForValue, MOOD_LABELS, STRESS_LABELS } from '../utils/labels.js';
+import { labelForValue } from '../utils/labels.js';
 import { formatDayShort } from '../utils/dates.js';
+import { useLabels } from '../utils/labelsContext.js';
 
 export default function EntryCard({ entry, dateKey, isToday, pending }) {
+  const labels = useLabels();
   if (!entry) {
     // Honest absence — no dashed borders, no fill, just a thin rule.
     return (
@@ -19,8 +21,8 @@ export default function EntryCard({ entry, dateKey, isToday, pending }) {
     );
   }
 
-  const mood = labelForValue(MOOD_LABELS, entry.mood).label;
-  const stress = labelForValue(STRESS_LABELS, entry.stress).label;
+  const mood = labelForValue(labels.mood, entry.mood).label;
+  const stress = labelForValue(labels.stress, entry.stress).label;
   const preview = (entry.transcript || '').trim();
 
   return (
@@ -45,12 +47,15 @@ export default function EntryCard({ entry, dateKey, isToday, pending }) {
 }
 
 function Chip({ label, tone }) {
-  const color = tone === 'ember' ? 'var(--ember-300)' : 'var(--moon-300)';
-  const bg    = tone === 'ember' ? 'rgba(232,137,74,0.12)' : 'rgba(123,145,176,0.12)';
+  const accent = tone === 'ember' ? 'var(--ember-500)' : 'var(--moon-500)';
   return (
     <span
       className="px-2 py-0.5 rounded-full label"
-      style={{ color, backgroundColor: bg, letterSpacing: '0.10em' }}
+      style={{
+        color: accent,
+        backgroundColor: `color-mix(in srgb, ${accent} 16%, transparent)`,
+        letterSpacing: '0.10em',
+      }}
     >
       {label}
     </span>

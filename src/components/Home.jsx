@@ -142,11 +142,12 @@ function SummaryTeaser({ label, title, subtitle, onTap, tone, delay }) {
 
 function SettingsGlyph() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="12" cy="12" r="3" stroke="#DFD3BE" strokeWidth="1.6" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden
+         style={{ color: 'var(--paper-200)' }}>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" />
       <path
         d="M19.4 13.6a7.6 7.6 0 0 0 0-3.2l1.6-1.3-1.6-2.8-2 .6a7.7 7.7 0 0 0-2.8-1.6L14 3h-4l-.6 2.3a7.7 7.7 0 0 0-2.8 1.6l-2-.6L3 9.1l1.6 1.3a7.6 7.6 0 0 0 0 3.2L3 14.9l1.6 2.8 2-.6a7.7 7.7 0 0 0 2.8 1.6L10 21h4l.6-2.3a7.7 7.7 0 0 0 2.8-1.6l2 .6L21 14.9l-1.6-1.3z"
-        stroke="#DFD3BE" strokeWidth="1.3" strokeLinejoin="round" />
+        stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
     </svg>
   );
 }

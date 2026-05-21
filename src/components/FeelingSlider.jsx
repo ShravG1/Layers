@@ -60,15 +60,11 @@ export default function FeelingSlider({
     };
   }, [dragging, setFromClientX]);
 
-  // Gradient stops: mood goes ember-700 → sage-500; stress goes sage-500 → ember-700.
-  // We interpolate by slider position so the fill colour at any handle position
-  // reflects where on the spectrum you are.
+  // Gradient endpoints come from the active theme. Mood runs ember → sage,
+  // stress runs sage → ember; the fill mask reveals the slice up to the handle.
   const isMood = variant === 'mood';
-  const colorPath = isMood
-    ? [['#B45F2A', '#A6753F'], ['#A6753F', '#8D7E55'], ['#8D7E55', '#7B826A'], ['#7B826A', '#6B8268']]
-    : [['#6B8268', '#7B826A'], ['#7B826A', '#8D7E55'], ['#8D7E55', '#A6753F'], ['#A6753F', '#B45F2A']];
-  const seg = Math.min(colorPath.length - 1, Math.floor(pos * colorPath.length));
-  const [gradFrom, gradTo] = colorPath[seg];
+  const gradFrom = isMood ? 'var(--ember-700)' : 'var(--sage-500)';
+  const gradTo   = isMood ? 'var(--sage-500)'  : 'var(--ember-700)';
 
   const accent = isMood ? 'var(--ember-500)' : 'var(--moon-500)';
   const thumbClass = isMood ? 'ember' : 'moon';

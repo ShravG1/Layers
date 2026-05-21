@@ -119,6 +119,26 @@
   }
 }
 
+/* ---------- Per-theme motion character ---------- */
+
+/* Paper — near-static. A page turning, nothing more. Looping motion is
+   silenced; entrances collapse to gentle fades. */
+[data-theme="paper"] .anim-breathe,
+[data-theme="paper"] .anim-breathe-glow,
+[data-theme="paper"] .anim-ember,
+[data-theme="paper"] .anim-spark { animation: none !important; }
+
+[data-theme="paper"] .anim-lift,
+[data-theme="paper"] .anim-lift-soft,
+[data-theme="paper"] .anim-glow-rise {
+  animation-name: ink-fade;
+  animation-duration: 420ms;
+}
+
+/* Tide — fluid. Entrances ease a touch longer and wave in. */
+[data-theme="tide"] .anim-lift      { animation-duration: 560ms; }
+[data-theme="tide"] .anim-lift-soft { animation-duration: 440ms; }
+
 /* View Transitions — match the ink-fade language */
 ::view-transition-old(root),
 ::view-transition-new(root) {

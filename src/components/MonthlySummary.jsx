@@ -5,9 +5,11 @@ import SkeletonSummary from './SkeletonSummary.jsx';
 import EntryCard from './EntryCard.jsx';
 import { monthKeys, monthLabel, formatDayShort } from '../utils/dates.js';
 import { findHighlights, generateSummary, recurringThemes } from '../utils/summary.js';
-import { labelForValue, MOOD_LABELS, STRESS_LABELS } from '../utils/labels.js';
+import { labelForValue } from '../utils/labels.js';
+import { useLabels } from '../utils/labelsContext.js';
 
 export default function MonthlySummary({ entries, apiKey, hapticsEnabled, onClose }) {
+  const labels = useLabels();
   const keys = useMemo(() => monthKeys(), []);
   const period = useMemo(() => keys.map(k => entries[k] || null), [keys, entries]);
   const filled = period.filter(Boolean);
@@ -33,7 +35,7 @@ export default function MonthlySummary({ entries, apiKey, hapticsEnabled, onClos
     if (!reflection.trim()) return;
     setStage('narrative');
     setLoading(true);
-    const text = await generateSummary({ apiKey, entries: filled, kind: 'monthly', userReflection: reflection });
+    const text = await generateSummary({ apiKey, entries: filled, kind: 'monthly', userReflection: reflection, labels });
     setSummary(text);
     setLoading(false);
   };
@@ -83,7 +85,7 @@ export default function MonthlySummary({ entries, apiKey, hapticsEnabled, onClos
             className="fixed left-0 right-0 bottom-0 px-5 pt-8 pb-6"
             style={{
               paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)',
-              background: 'linear-gradient(180deg, rgba(14,17,23,0) 0%, var(--ink-900) 40%)',
+              background: 'linear-gradient(180deg, transparent 0%, var(--ink-900) 40%)',
               pointerEvents: unlocked ? 'auto' : 'none',
             }}
           >
@@ -93,15 +95,15 @@ export default function MonthlySummary({ entries, apiKey, hapticsEnabled, onClos
                   aria-hidden
                   className="absolute -inset-x-4 -inset-y-3 rounded-[36px]"
                   style={{
-                    background: 'radial-gradient(ellipse at center, rgba(123,145,176,0.30) 0%, rgba(123,145,176,0) 70%)',
+                    background: 'radial-gradient(ellipse at center, color-mix(in srgb, var(--moon-500) 30%, transparent) 0%, transparent 70%)',
                   }}
                 />
                 <button
                   onClick={() => setStage('reflect')}
                   className="relative w-full h-[60px] rounded-full press display-md"
                   style={{
-                    background: 'linear-gradient(180deg, #B8C7DE 0%, #7B91B0 60%, #4D6280 100%)',
-                    color: '#0E1117',
+                    background: 'var(--grad-cool)',
+                    color: 'var(--on-cool)',
                     boxShadow: 'var(--shadow-lg), var(--glow-moon)',
                     fontSize: '20px',
                   }}
@@ -136,8 +138,8 @@ export default function MonthlySummary({ entries, apiKey, hapticsEnabled, onClos
             className={`mt-6 w-full h-[56px] rounded-full press body-lg
                         ${!reflection.trim() ? 'opacity-50' : ''}`}
             style={{
-              background: 'linear-gradient(180deg, #F4B98A 0%, #E8894A 60%, #B45F2A 100%)',
-              color: '#1A0F08',
+              background: 'var(--grad-warm)',
+              color: 'var(--on-warm)',
               boxShadow: 'var(--shadow-md), var(--glow-ember)',
             }}
           >
@@ -217,6 +219,7 @@ function weekify(keys, entries) {
 }
 
 function WeekHighlight({ title, w, tone }) {
+  const labels = useLabels();
   const rail = tone === 'ember' ? 'rail-ember' : 'rail-moon';
   if (!w) {
     return (
@@ -226,7 +229,7 @@ function WeekHighlight({ title, w, tone }) {
       </div>
     );
   }
-  const mood = labelForValue(MOOD_LABELS, Math.round(w.avgMood)).label;
+  const mood = labelForValue(labels.mood, Math.round(w.avgMood)).label;
   return (
     <div className={`surface-card ${rail} p-4`}>
       <div className="label">{title}</div>
@@ -242,10 +245,11 @@ function WeekHighlight({ title, w, tone }) {
 }
 
 function DayHighlight({ title, entry, tone }) {
-  if (!entry) return null;
+  const labels = useLabels();
   const rail = tone === 'ember' ? 'rail-ember' : 'rail-moon';
-  const mood = labelForValue(MOOD_LABELS, entry.mood).label;
-  const stress = labelForValue(STRESS_LABELS, entry.stress).label;
+  if (!entry) return null;
+  const mood = labelForValue(labels.mood, entry.mood).label;
+  const stress = labelForValue(labels.stress, entry.stress).label;
   return (
     <div className={`surface-card ${rail} p-4`}>
       <div className="label">{title}</div>
