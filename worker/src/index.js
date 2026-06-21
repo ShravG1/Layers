@@ -118,6 +118,7 @@ async function handleCron(env) {
   do {
     const list = await env.SUBS.list({ cursor, limit: 1000 })
     for (const k of list.keys) {
+      if (k.name.startsWith('bk:')) continue
       const raw = await env.SUBS.get(k.name)
       if (!raw) continue
       const sub = JSON.parse(raw)
