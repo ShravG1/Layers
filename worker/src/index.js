@@ -57,17 +57,6 @@ async function handleHttp(request, env) {
     return json({ ok: true })
   }
 
-  // Test push to a single subscription
-  if (url.pathname === '/test' && request.method === 'POST') {
-    const body = await request.json()
-    const id = await hashEndpoint(body.endpoint)
-    const raw = await env.SUBS.get(id)
-    if (!raw) return json({ error: 'not found' }, 404)
-    const sub = JSON.parse(raw)
-    const res = await sendOutfitPush(sub, vapidFromEnv(env))
-    return json({ status: res.status })
-  }
-
   // Back up the app's local data under a user-held code.
   // body: { code, data }  data = { "wtw_history": "...", ... }
   if (url.pathname === '/sync/backup' && request.method === 'POST') {
