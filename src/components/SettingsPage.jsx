@@ -3,12 +3,12 @@ import { usePushNotifications } from '../hooks/usePushNotifications.js'
 import { WardrobeSelect } from './WardrobeSelect.jsx'
 import { loadSettings, saveSettings } from '../utils/settingsStore.js'
 
-export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange, customExtras = [], onAddCustom, onRemoveCustom, onShowReinstall, cloudBackup }) {
+export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange, customExtras = [], onAddCustom, onRemoveCustom, onShowReinstall, cloudBackup, onEnableNotifications }) {
   const [wardrobeOpen, setWardrobeOpen] = useState(false)
   const [settings, setSettings] = useState(() => ({
     eveningCheckHour: 19,
     eveningTempDrop: 4,
-    notifTime: '07:30',
+    notifTime: '07:00',
     dressForDayEnabled: true,
     uvAlertsEnabled: true,
     windAdvisoryEnabled: true,
@@ -20,13 +20,16 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
     ...loadSettings(),
   }))
   const [showResetConfirm, setShowResetConfirm] = useState(false)
-  const { permission, requestPermission } = usePushNotifications()
+  const { permission } = usePushNotifications()
 
   const update = (key, val) => {
     const next = { ...settings, [key]: val }
     setSettings(next)
     saveSettings(next)
   }
+
+  // Normalise a possibly-legacy "HH:MM" value to a whole hour for the select.
+  const notifHour = String(parseInt(settings.notifTime, 10) || 7).padStart(2, '0')
 
   return (
     <div className="overflow-y-auto h-full pb-24 px-4 pt-4">
@@ -131,12 +134,18 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
       {/* Notifications */}
       <Section title="Notifications">
         <Row label="Daily outfit time">
-          <input
-            type="time"
-            value={settings.notifTime}
+          {/* Whole hours only — the worker cron is hourly, so a minute-precise
+              picker would promise precision the pipeline can't deliver. */}
+          <select
+            value={`${notifHour}:00`}
             onChange={e => update('notifTime', e.target.value)}
             className="bg-zinc-800 text-white rounded-lg px-3 py-1.5 text-sm"
-          />
+          >
+            {Array.from({ length: 24 }, (_, h) => {
+              const val = `${String(h).padStart(2, '0')}:00`
+              return <option key={h} value={val}>{val}</option>
+            })}
+          </select>
         </Row>
         <Row label="Permission">
           <span className={`text-xs px-2 py-1 rounded-full ${
@@ -149,7 +158,7 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
         </Row>
         {permission === 'default' && (
           <button
-            onClick={requestPermission}
+            onClick={() => onEnableNotifications?.()}
             className="w-full mt-2 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-500 transition-colors"
           >
             Enable daily notifications
