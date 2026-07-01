@@ -30,7 +30,7 @@ export function usePullToRefresh(scrollRef, onRefresh) {
       if (pull >= TRIGGER_DISTANCE) {
         setRefreshing(true)
         setPull(TRIGGER_DISTANCE)
-        try { await onRefresh?.() } catch {}
+        try { await onRefresh?.() } catch { /* refresh failed — reset pull state below */ }
         setRefreshing(false)
       }
       setPull(0)

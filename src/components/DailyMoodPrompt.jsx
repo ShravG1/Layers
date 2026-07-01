@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 const LS_KEY = 'wtw_lastMoodPromptDate'
 
@@ -13,15 +13,12 @@ export function DailyMoodPrompt({
   onAcknowledgeDrop,
   acknowledgedDrop,
 }) {
-  const [dismissed, setDismissed] = useState(false)
+  const [today] = useState(() => new Date().toISOString().slice(0, 10))
+  // Whether we've already prompted today is knowable up-front from localStorage,
+  // so derive it as lazy initial state rather than setting it inside an effect.
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(LS_KEY) === today)
   const [step, setStep] = useState(0)
   const [mood, setMood] = useState(null)
-  const today = new Date().toISOString().slice(0, 10)
-
-  useEffect(() => {
-    const last = localStorage.getItem(LS_KEY)
-    if (last === today) setDismissed(true)
-  }, [today])
 
   if (dismissed || hour < 18) return null
   if (dailyMoodLog[0]?.date === today) return null

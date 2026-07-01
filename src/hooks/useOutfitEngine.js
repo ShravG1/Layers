@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { buildOutfit, outfitItems } from '../utils/outfitLogic.js'
 import { kmhToMph } from '../utils/weatherHelpers.js'
 
-export function useOutfitEngine({ weather, hourly, preferences, settings }) {
+export function useOutfitEngine({ weather, preferences }) {
   return useMemo(() => {
     if (!weather) return null
 
@@ -30,5 +30,5 @@ export function useOutfitEngine({ weather, hourly, preferences, settings }) {
       isMorningOrEvening,
       hour,
     }
-  }, [weather, preferences, settings])
+  }, [weather, preferences])
 }

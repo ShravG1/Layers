@@ -35,9 +35,10 @@ export function useWeather() {
   const [hourly, setHourly]         = useState(null)
   const [daily, setDaily]           = useState(null)
   const [location, setLocation]     = useState(null) // { name, lat, lon }
-  const [loading, setLoading]       = useState(true)
+  const geoAvailable = typeof navigator !== 'undefined' && !!navigator.geolocation
+  const [loading, setLoading]       = useState(geoAvailable)
   const [error, setError]           = useState(null)
-  const [geoBlocked, setGeoBlocked] = useState(false)
+  const [geoBlocked, setGeoBlocked] = useState(!geoAvailable)
   const [savedLocations, setSavedLocations] = useState(loadSavedLocations)
 
   const load = useCallback(async (lat, lon, name = null) => {
@@ -66,11 +67,9 @@ export function useWeather() {
   }, [])
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setGeoBlocked(true)
-      setLoading(false)
-      return
-    }
+    // Absence of geolocation is handled up-front via lazy initial state, so the
+    // effect only drives the async permission request.
+    if (!navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
       pos => load(pos.coords.latitude, pos.coords.longitude),
       () => {

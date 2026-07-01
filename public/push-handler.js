@@ -3,7 +3,7 @@ self.addEventListener('push', (e) => {
   let data = { title: 'Layers', body: "Check today's outfit." }
   try {
     if (e.data) data = { ...data, ...e.data.json() }
-  } catch {}
+  } catch { /* malformed payload — fall back to defaults */ }
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body:  data.body,

@@ -1,6 +1,6 @@
 import { buildOutfit, outfitItems } from './outfitLogic.js'
 import { kmhToMph } from './weatherHelpers.js'
-import { getDaytimePeak, getEveningForecast } from './forecastHelpers.js'
+import { getEveningForecast } from './forecastHelpers.js'
 
 // Format the one-line notification string
 export function formatNotificationBody({ current, hourly, preferences, settings }) {
