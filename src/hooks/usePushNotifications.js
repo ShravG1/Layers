@@ -15,12 +15,19 @@ function urlB64ToUint8Array(b64) {
   return out
 }
 
+// The worker cron fires hourly and stores an integer localHour, so notification
+// time is hour-granular. Parse "HH:MM" (or "HH") to a 0-23 hour, defaulting to 7.
+export function notifTimeToHour(time) {
+  const h = parseInt(String(time ?? '').split(':')[0], 10)
+  return Number.isFinite(h) && h >= 0 && h <= 23 ? h : 7
+}
+
 function loadStored() {
   try {
     const raw = localStorage.getItem(LS_KEY)
-    return raw ? JSON.parse(raw) : { enabled: false, time: '07:30', prompted: false }
+    return raw ? JSON.parse(raw) : { enabled: false, time: '07:00', prompted: false }
   } catch {
-    return { enabled: false, time: '07:30', prompted: false }
+    return { enabled: false, time: '07:00', prompted: false }
   }
 }
 

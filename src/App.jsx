@@ -4,7 +4,7 @@ import { usePreferences }       from './hooks/usePreferences.js'
 import { useOutfitEngine }      from './hooks/useOutfitEngine.js'
 import { useEveningForecast }   from './hooks/useEveningForecast.js'
 import { useMorningPeak }       from './hooks/useMorningPeak.js'
-import { usePushNotifications } from './hooks/usePushNotifications.js'
+import { usePushNotifications, notifTimeToHour } from './hooks/usePushNotifications.js'
 import { usePullToRefresh }     from './hooks/usePullToRefresh.js'
 import { useAppUpdate }        from './hooks/useAppUpdate.js'
 import { useCloudBackup }      from './hooks/useCloudBackup.js'
@@ -58,7 +58,7 @@ export default function App() {
     clearPendingToast, resetPreferences, resetOnboarding,
   } = usePreferences()
 
-  const { permission, notifSettings, requestPermission } = usePushNotifications()
+  const { permission, notifSettings, requestPermission, subscribeToPush } = usePushNotifications()
 
   const cloudBackup = useCloudBackup()
 
@@ -110,6 +110,31 @@ export default function App() {
     const t = setTimeout(() => setNotifPromptShown(true), 1500)
     return () => clearTimeout(t)
   }, [prefs.onboardingDone, notifSettings.prompted, permission])
+
+  // Re-sync time + location to the push worker whenever the notification time,
+  // the location, or permission changes. Without this, the subscription payload
+  // is only ever populated at first enable and Settings edits are silently
+  // ignored (the worker keeps firing at the old hour, or with no location).
+  const notifHour = notifTimeToHour(settings.notifTime)
+  useEffect(() => {
+    if (permission !== 'granted') return
+    if (!location?.lat || !location?.lon) return
+    subscribeToPush({
+      lat: location.lat,
+      lon: location.lon,
+      city: location.name,
+      localHour: notifHour,
+    })
+  }, [permission, location?.lat, location?.lon, location?.name, notifHour, subscribeToPush])
+
+  // Enable notifications from the Settings page with real args (not the bare
+  // click event, which used to leave lat/lon/city undefined and localHour at 7).
+  const enableNotifications = useCallback(() => requestPermission({
+    lat: location?.lat,
+    lon: location?.lon,
+    city: location?.name,
+    localHour: notifTimeToHour(loadSettings().notifTime),
+  }), [requestPermission, location?.lat, location?.lon, location?.name])
 
   const handleFeedback = useCallback((val) => {
     if (!outfitData) return
@@ -226,7 +251,7 @@ export default function App() {
               <div className="mx-4 mt-4 rounded-2xl bg-zinc-900 border border-zinc-700 p-4 animate-fade-in">
                 <p className="text-white text-sm font-medium mb-1">Daily outfit heads-up?</p>
                 <p className="text-zinc-400 text-xs mb-3 leading-relaxed">
-                  Want a daily outfit hint at 7:30am? We'll keep it to one line.
+                  Want a daily outfit hint at 7am? We'll keep it to one line.
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -237,12 +262,11 @@ export default function App() {
                   </button>
                   <button
                     onClick={async () => {
-                      const hour = parseInt((settings.notifTime || '07:30').split(':')[0]) || 7
                       await requestPermission({
                         lat: location?.lat,
                         lon: location?.lon,
                         city: location?.name,
-                        localHour: hour,
+                        localHour: notifTimeToHour(settings.notifTime),
                       })
                       setNotifPromptShown(false)
                     }}
@@ -271,6 +295,7 @@ export default function App() {
             onRemoveCustom={removeCustomExtra}
             onShowReinstall={() => setShowReinstall(true)}
             cloudBackup={cloudBackup}
+            onEnableNotifications={enableNotifications}
           />
         )}
       </main>
