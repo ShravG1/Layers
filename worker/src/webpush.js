@@ -24,15 +24,6 @@ function concat(...arrs) {
 }
 function utf8(s) { return new TextEncoder().encode(s) }
 
-async function importVapidPrivate(b64uPriv) {
-  // P-256 raw private key
-  const d = b64uToBytes(b64uPriv)
-  // Need full JWK with x/y derived. Easier: re-derive public from private isn't directly possible
-  // without point math. We expect VAPID keys generated as JWK or as raw d + raw public.
-  // For simplicity, we accept JSON JWK string as VAPID_PRIVATE_KEY.
-  throw new Error('Use JWK form for private key')
-}
-
 // Sign VAPID JWT (ES256) with a JWK private key.
 async function signVapidJwt({ aud, sub }, jwkPrivate) {
   const header = { alg: 'ES256', typ: 'JWT' }

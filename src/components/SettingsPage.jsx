@@ -1,18 +1,7 @@
 import { useState } from 'react'
 import { usePushNotifications } from '../hooks/usePushNotifications.js'
 import { WardrobeSelect } from './WardrobeSelect.jsx'
-
-const LS_SETTINGS_KEY = 'wtw_settings'
-
-export function loadSettings() {
-  try {
-    return JSON.parse(localStorage.getItem(LS_SETTINGS_KEY)) ?? {}
-  } catch { return {} }
-}
-
-export function saveSettings(settings) {
-  localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(settings))
-}
+import { loadSettings, saveSettings } from '../utils/settingsStore.js'
 
 export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], onWardrobeChange, customExtras = [], onAddCustom, onRemoveCustom, onShowReinstall, cloudBackup }) {
   const [wardrobeOpen, setWardrobeOpen] = useState(false)
@@ -31,7 +20,7 @@ export function SettingsPage({ onResetPrefs, onResetOnboarding, wardrobe = [], o
     ...loadSettings(),
   }))
   const [showResetConfirm, setShowResetConfirm] = useState(false)
-  const { permission, requestPermission, notifSettings } = usePushNotifications()
+  const { permission, requestPermission } = usePushNotifications()
 
   const update = (key, val) => {
     const next = { ...settings, [key]: val }

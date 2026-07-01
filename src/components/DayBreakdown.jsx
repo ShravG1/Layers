@@ -1,6 +1,6 @@
 import { kmhToMph, displayTempNum, tempSymbol } from '../utils/weatherHelpers.js'
 
-function HourlyBar({ hour, feelsLike, actual, rain, isCurrent, min, max }) {
+function HourlyBar({ hour, feelsLike, isCurrent, min, max }) {
   const range = max - min || 1
   const pct = Math.round(((feelsLike - min) / range) * 100)
   const label = hour === 0 ? '12a' : hour < 12 ? `${hour}a` : hour === 12 ? '12p' : `${hour - 12}p`

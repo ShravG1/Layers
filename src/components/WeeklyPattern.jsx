@@ -1,10 +1,12 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { BUCKET_LABELS } from '../utils/outfitLogic.js'
 
 export function WeeklyPattern({ feedbackLog = [], bucketAdjustments = {} }) {
+  // Read the clock once, out of render, to keep the memo pure (react-hooks/purity).
+  const [now] = useState(() => Date.now())
   const insight = useMemo(() => {
     if (feedbackLog.length < 5) return null
-    const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000
+    const sevenDaysAgo = now - 7 * 24 * 3600 * 1000
     const recent = feedbackLog.filter(l => l.timestamp > sevenDaysAgo)
     if (recent.length < 3) return null
 
@@ -33,7 +35,7 @@ export function WeeklyPattern({ feedbackLog = [], bucketAdjustments = {} }) {
       signal: bestSignal,
       adjusted: alreadyAdjusted,
     }
-  }, [feedbackLog, bucketAdjustments])
+  }, [feedbackLog, bucketAdjustments, now])
 
   if (!insight) return null
 

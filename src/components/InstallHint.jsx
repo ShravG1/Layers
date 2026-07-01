@@ -73,21 +73,3 @@ export function InstallHint() {
     </div>
   )
 }
-
-// Detects whether we're a freshly-installed PWA. Returns true on first launch
-// in standalone mode after add-to-home-screen.
-export function useFreshlyInstalled() {
-  const [fresh, setFresh] = useState(false)
-  useEffect(() => {
-    const standalone =
-      window.matchMedia?.('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true
-    if (!standalone) return
-    const seen = localStorage.getItem('wtw_pwaLaunched')
-    if (!seen) {
-      localStorage.setItem('wtw_pwaLaunched', '1')
-      setFresh(true)
-    }
-  }, [])
-  return fresh
-}
