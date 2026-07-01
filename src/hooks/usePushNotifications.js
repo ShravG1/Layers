@@ -4,7 +4,28 @@ const LS_KEY = 'wtw_notifications'
 
 // Set this to your deployed worker URL. Empty disables remote subscribe.
 const WORKER_URL = import.meta.env.VITE_PUSH_WORKER_URL || ''
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
+// Optional build-time fallback. Normally the key is fetched at runtime from the
+// worker's /vapid-public-key route, so only VITE_PUSH_WORKER_URL is required.
+const VAPID_PUBLIC_KEY_ENV = import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
+
+// Resolve the VAPID public key: fetch it from the worker (single source of
+// truth, matches the key the worker signs with), falling back to the build-time
+// env var if the route is unreachable. Cached after the first successful read.
+let vapidKeyCache = null
+async function getVapidPublicKey() {
+  if (vapidKeyCache) return vapidKeyCache
+  if (WORKER_URL) {
+    try {
+      const res = await fetch(`${WORKER_URL}/vapid-public-key`)
+      if (res.ok) {
+        const { publicKey } = await res.json()
+        if (publicKey) { vapidKeyCache = publicKey; return publicKey }
+      }
+    } catch { /* worker unreachable — fall back to the build env var below */ }
+  }
+  if (VAPID_PUBLIC_KEY_ENV) { vapidKeyCache = VAPID_PUBLIC_KEY_ENV; return VAPID_PUBLIC_KEY_ENV }
+  return ''
+}
 
 function urlB64ToUint8Array(b64) {
   const padding = '='.repeat((4 - (b64.length % 4)) % 4)
@@ -40,15 +61,18 @@ export function usePushNotifications() {
   }, [])
 
   const subscribeToPush = useCallback(async ({ lat, lon, city, localHour } = {}) => {
-    if (!WORKER_URL || !VAPID_PUBLIC_KEY) return null
+    if (!WORKER_URL) return null
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null
+
+    const vapidKey = await getVapidPublicKey()
+    if (!vapidKey) return null
 
     const reg = await navigator.serviceWorker.ready
     let sub = await reg.pushManager.getSubscription()
     if (!sub) {
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: urlB64ToUint8Array(vapidKey),
       })
     }
 
