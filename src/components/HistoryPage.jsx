@@ -1,20 +1,7 @@
 import { useState } from 'react'
 import { ITEM_EMOJI, BUCKET_LABELS } from '../utils/outfitLogic.js'
 import { ITEM_BY_ID } from '../utils/wardrobe.js'
-
-const LS_KEY = 'wtw_history'
-
-export function loadHistory() {
-  try {
-    return JSON.parse(localStorage.getItem(LS_KEY)) ?? []
-  } catch { return [] }
-}
-
-export function saveHistoryEntry(entry) {
-  const history = loadHistory()
-  history.unshift({ ...entry, id: Date.now() })
-  localStorage.setItem(LS_KEY, JSON.stringify(history.slice(0, 90)))
-}
+import { loadHistory } from '../utils/historyStore.js'
 
 function renderWorn(id) {
   const item = ITEM_BY_ID[id]

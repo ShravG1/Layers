@@ -50,6 +50,13 @@ npx wrangler deploy      # deploys layers-push to Cloudflare Workers
   Workers & Pages → `layers-push`). Without it, push notifications and cloud
   backup are silently disabled — the hooks read
   `import.meta.env.VITE_PUSH_WORKER_URL || ''`.
+- **VAPID public key** — `subscribeToPush` fetches it at runtime from the worker's
+  `GET /vapid-public-key` route, so `VITE_PUSH_WORKER_URL` is normally the only
+  build-time var push needs. Set the key once on the *worker* as the
+  `VAPID_PUBLIC_KEY` secret (`cd worker && wrangler secret put VAPID_PUBLIC_KEY`) —
+  it must match the `VAPID_PRIVATE_KEY` the worker signs with.
+  `VITE_VAPID_PUBLIC_KEY` is now only an **optional** build-time fallback used if
+  the runtime fetch fails; if you set it, use the *same* key as the worker.
 - Live: <https://lun-flax.vercel.app>.
 
 ## Guardrails (CONTRACT.md)

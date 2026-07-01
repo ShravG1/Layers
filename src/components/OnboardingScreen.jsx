@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { WardrobeSelect } from './WardrobeSelect.jsx'
-import { DEFAULT_WARDROBE } from '../utils/wardrobe.js'
 import { backupConfigured, restoreFromCode } from '../hooks/useCloudBackup.js'
 
 const PROFILES = [

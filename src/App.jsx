@@ -17,8 +17,10 @@ import { UVAlert }             from './components/UVAlert.jsx'
 import { OnboardingScreen }    from './components/OnboardingScreen.jsx'
 import { LocationSearch }      from './components/LocationSearch.jsx'
 import { Toast }               from './components/Toast.jsx'
-import { HistoryPage, saveHistoryEntry, loadHistory } from './components/HistoryPage.jsx'
-import { SettingsPage, loadSettings } from './components/SettingsPage.jsx'
+import { HistoryPage } from './components/HistoryPage.jsx'
+import { SettingsPage } from './components/SettingsPage.jsx'
+import { saveHistoryEntry, loadHistory } from './utils/historyStore.js'
+import { loadSettings } from './utils/settingsStore.js'
 import { DailyMoodPrompt } from './components/DailyMoodPrompt.jsx'
 import { InstallHint } from './components/InstallHint.jsx'
 import { TomorrowCard } from './components/TomorrowCard.jsx'
@@ -76,10 +78,13 @@ export default function App() {
     settings,
   })
 
-  // Re-read settings from localStorage when tab changes
-  useEffect(() => {
+  // Re-read settings from localStorage on tab change. Done in the tab handler
+  // (an event) rather than an effect so we don't call setState synchronously in
+  // an effect body (react-hooks/set-state-in-effect).
+  const changeTab = useCallback((t) => {
     setSettings(loadSettings())
-  }, [tab])
+    setTab(t)
+  }, [])
 
   // Save history entry when outfit first loads
   useEffect(() => {
@@ -309,7 +314,7 @@ export default function App() {
         {TABS.map(t => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => changeTab(t)}
             className={`flex-1 pt-3 pb-2 text-[11px] flex flex-col items-center gap-1.5 transition-colors active:scale-95
               ${tab === t ? 'text-indigo-400' : 'text-zinc-600'}`}
           >
